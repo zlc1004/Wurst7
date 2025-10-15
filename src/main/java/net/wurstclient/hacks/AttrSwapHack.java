@@ -11,31 +11,40 @@ import net.minecraft.client.gui.DrawContext;
 import net.wurstclient.Category;
 import net.wurstclient.SearchTags;
 import net.wurstclient.events.GUIRenderListener;
+import net.wurstclient.events.LeftClickListener;
 import net.wurstclient.events.RightClickListener;
 import net.wurstclient.events.UpdateListener;
 import net.wurstclient.hack.Hack;
+import net.wurstclient.settings.CheckboxSetting;
 import net.wurstclient.settings.SliderSetting;
 import net.wurstclient.settings.SliderSetting.ValueDisplay;
 
 @SearchTags({"attr swap", "attribute swap", "enchant swap", "enchantment swap",
 	"durability swap", "nbt swap"})
-public final class AttrSwapHack extends Hack
-	implements RightClickListener, UpdateListener, GUIRenderListener
+public final class AttrSwapHack extends Hack implements LeftClickListener,
+	RightClickListener, UpdateListener, GUIRenderListener
 {
 	private final SliderSetting targetSlot = new SliderSetting("Target Slot",
 		"Hotbar slot to switch to after using an item.\n"
 			+ "This creates the timing window needed for attribute swapping.",
 		1, 1, 9, 1, ValueDisplay.INTEGER);
 	
+	private final CheckboxSetting enableLeftClick = new CheckboxSetting(
+		"Left Click", "Enable swapping on left click (attack).", true);
+	
+	private final CheckboxSetting enableRightClick = new CheckboxSetting(
+		"Right Click", "Enable swapping on right click (use item).", true);
+	
 	private boolean shouldSwap = false;
 	private int ticksToWait = 0;
-	private int highlightTicks = 0;
 	
 	public AttrSwapHack()
 	{
 		super("AttrSwap");
 		setCategory(Category.ITEMS);
 		addSetting(targetSlot);
+		addSetting(enableLeftClick);
+		addSetting(enableRightClick);
 	}
 	
 	@Override
@@ -47,6 +56,7 @@ public final class AttrSwapHack extends Hack
 	@Override
 	protected void onEnable()
 	{
+		EVENTS.add(LeftClickListener.class, this);
 		EVENTS.add(RightClickListener.class, this);
 		EVENTS.add(UpdateListener.class, this);
 		EVENTS.add(GUIRenderListener.class, this);
@@ -55,25 +65,34 @@ public final class AttrSwapHack extends Hack
 	@Override
 	protected void onDisable()
 	{
+		EVENTS.remove(LeftClickListener.class, this);
 		EVENTS.remove(RightClickListener.class, this);
 		EVENTS.remove(UpdateListener.class, this);
 		EVENTS.remove(GUIRenderListener.class, this);
 		shouldSwap = false;
 		ticksToWait = 0;
-		highlightTicks = 0;
 	}
 	
 	@Override
-	public void onRightClick(RightClickEvent event)
+	public void onLeftClick(LeftClickEvent event)
 	{
-		if(MC.player == null)
+		if(MC.player == null || !enableLeftClick.isChecked())
 			return;
 		
 		// Schedule slot swap for next tick
 		shouldSwap = true;
 		ticksToWait = 1;
-		// Start highlighting immediately to show which slot will be targeted
-		highlightTicks = 30; // 1.5 seconds of highlighting
+	}
+	
+	@Override
+	public void onRightClick(RightClickEvent event)
+	{
+		if(MC.player == null || !enableRightClick.isChecked())
+			return;
+		
+		// Schedule slot swap for next tick
+		shouldSwap = true;
+		ticksToWait = 1;
 	}
 	
 	@Override
@@ -81,10 +100,6 @@ public final class AttrSwapHack extends Hack
 	{
 		if(MC.player == null)
 			return;
-		
-		// Decrease highlight timer
-		if(highlightTicks > 0)
-			highlightTicks--;
 		
 		if(!shouldSwap)
 			return;
@@ -104,8 +119,6 @@ public final class AttrSwapHack extends Hack
 		if(currentSlot != targetSlotIndex)
 		{
 			MC.player.getInventory().setSelectedSlot(targetSlotIndex);
-			// Start highlight animation for 20 ticks (1 second)
-			highlightTicks = 20;
 		}
 		
 		shouldSwap = false;
@@ -115,11 +128,6 @@ public final class AttrSwapHack extends Hack
 	public void onRenderGUI(DrawContext context, float partialTicks)
 	{
 		if(MC.player == null || !isEnabled())
-			return;
-			
-		// Only render highlight when we have active highlighting or are about
-		// to swap
-		if(highlightTicks <= 0 && !shouldSwap)
 			return;
 		
 		// Calculate hotbar position (similar to taco hack)
@@ -140,7 +148,7 @@ public final class AttrSwapHack extends Hack
 			hotbarCenterX - (9 * slotSize / 2) + (targetSlotIndex * slotSize);
 		int slotY = hotbarY;
 		
-		// Orange color with some transparency
+		// Orange color - always visible when hack is enabled
 		int orangeColor = 0x80FF8C00; // Semi-transparent dark orange
 		
 		// Make it more visible when actively swapping
