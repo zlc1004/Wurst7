@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2025 Wurst-Imperium and contributors.
+ * Copyright (c) 2025 Kobosh.
  *
  * This source code is subject to the terms of the GNU General Public
  * License, version 3. If a copy of the GPL was not distributed with this
@@ -24,30 +24,30 @@ public final class AttrSwapHack extends Hack
 		"Hotbar slot to switch to after using an item.\n"
 			+ "This creates the timing window needed for attribute swapping.",
 		1, 1, 9, 1, ValueDisplay.INTEGER);
-	
+
 	private boolean shouldSwap = false;
 	private int ticksToWait = 0;
-	
+
 	public AttrSwapHack()
 	{
 		super("AttrSwap");
 		setCategory(Category.ITEMS);
 		addSetting(targetSlot);
 	}
-	
+
 	@Override
 	public String getRenderName()
 	{
 		return getName() + " [" + targetSlot.getValueString() + "]";
 	}
-	
+
 	@Override
 	protected void onEnable()
 	{
 		EVENTS.add(RightClickListener.class, this);
 		EVENTS.add(UpdateListener.class, this);
 	}
-	
+
 	@Override
 	protected void onDisable()
 	{
@@ -56,44 +56,44 @@ public final class AttrSwapHack extends Hack
 		shouldSwap = false;
 		ticksToWait = 0;
 	}
-	
+
 	@Override
 	public void onRightClick(RightClickEvent event)
 	{
 		if(MC.player == null)
 			return;
-		
+
 		// Schedule slot swap for next tick
 		shouldSwap = true;
 		ticksToWait = 1;
 	}
-	
+
 	@Override
 	public void onUpdate()
 	{
 		if(MC.player == null)
 			return;
-		
+
 		if(!shouldSwap)
 			return;
-		
+
 		// Wait for the specified number of ticks
 		if(ticksToWait > 0)
 		{
 			ticksToWait--;
 			return;
 		}
-		
+
 		// Perform the slot swap
 		int currentSlot = MC.player.getInventory().getSelectedSlot();
 		int targetSlotIndex = targetSlot.getValueI() - 1; // Convert 1-9 to 0-8
-		
+
 		// Don't swap if already on target slot
 		if(currentSlot != targetSlotIndex)
 		{
 			MC.player.getInventory().setSelectedSlot(targetSlotIndex);
 		}
-		
+
 		shouldSwap = false;
 	}
 }

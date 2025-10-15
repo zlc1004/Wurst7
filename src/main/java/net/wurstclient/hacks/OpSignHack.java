@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2025 Wurst-Imperium and contributors.
+ * Copyright (c) 2025 Kobosh.
  *
  * This source code is subject to the terms of the GNU General Public
  * License, version 3. If a copy of the GPL was not distributed with this
@@ -24,10 +24,10 @@ public final class OpSignHack extends Hack
 	public OpSignHack()
 	{
 		super("OpSign");
-		
+
 		setCategory(Category.ITEMS);
 	}
-	
+
 	@Override
 	protected void onEnable()
 	{
@@ -37,20 +37,20 @@ public final class OpSignHack extends Hack
 			setEnabled(false);
 			return;
 		}
-		
+
 		if(!MC.player.getInventory().getStack(36).isEmpty())
 		{
 			ChatUtils.error("Please clear your shoes slot.");
 			setEnabled(false);
 			return;
 		}
-		
+
 		// generate item
 		ItemStack stack = new ItemStack(Blocks.OAK_SIGN);
 		NbtCompound nbtCompound = new NbtCompound();
 		stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtCompound));
 		stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Copy Me"));
-		
+
 		// give item
 		MC.player.getInventory().setStack(36, stack);
 		ChatUtils.message("Item has been placed in your shoes slot.");

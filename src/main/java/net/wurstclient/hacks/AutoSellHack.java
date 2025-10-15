@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2025 Wurst-Imperium and contributors.
+ * Copyright (c) 2025 Kobosh.
  *
  * This source code is subject to the terms of the GNU General Public
  * License, version 3. If a copy of the GPL was not distributed with this
@@ -19,10 +19,10 @@ public final class AutoSellHack extends Hack
 		"Delay between moving stacks of items.\n"
 			+ "Should be at least 70ms for NoCheat+ servers.",
 		100, 0, 2500, 10, ValueDisplay.INTEGER.withSuffix("ms"));
-	
+
 	private final CheckboxSetting buttons =
 		new CheckboxSetting("AutoSell button", false);
-	
+
 	public AutoSellHack()
 	{
 		super("AutoSell");
@@ -30,16 +30,16 @@ public final class AutoSellHack extends Hack
 		addSetting(buttons);
 		addSetting(delay);
 	}
-	
+
 	public boolean areButtonsVisible()
 	{
 		return buttons.isChecked();
 	}
-	
+
 	public long getDelay()
 	{
 		return delay.getValueI();
 	}
-	
+
 	// See ContainerScreenMixin and ShulkerBoxScreenMixin
 }
