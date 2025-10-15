@@ -33,7 +33,7 @@ public final class WurstLogoOtf extends OtherFeature
 	
 	public WurstLogoOtf()
 	{
-		super("WurstLogo", "Shows the Wurst logo and version on the screen.");
+		super("KoboshLogo", "Shows the Kobosh logo and version on the screen.");
 		addSetting(bgColor);
 		addSetting(txtColor);
 		addSetting(visibility);

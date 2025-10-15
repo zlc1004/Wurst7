@@ -50,11 +50,13 @@ public final class WurstLogo
 	
 	private String getVersionString()
 	{
-		String version = "v" + WurstClient.VERSION;
+		String version = "Kobosh joei client";
 		version += " MC" + WurstClient.MC_VERSION;
 		
 		if(WURST.getUpdater().isOutdated())
-			version += " (outdated)";
+			version += "";
+		
+		// version += " built with kobosh joei";
 		
 		return version;
 	}
