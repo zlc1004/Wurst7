@@ -1,0 +1,81 @@
+Index: src/main/java/net/wurstclient/mixin/GameMenuScreenMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/net/wurstclient/mixin/GameMenuScreenMixin.java b/src/main/java/net/wurstclient/mixin/GameMenuScreenMixin.java
+--- a/src/main/java/net/wurstclient/mixin/GameMenuScreenMixin.java	(revision 96786bbce9ac3a2b5a8294ee2079ead6acfd271f)
++++ b/src/main/java/net/wurstclient/mixin/GameMenuScreenMixin.java	(date 1719429297571)
+@@ -26,8 +26,6 @@
+ import net.minecraft.client.resource.language.I18n;
+ import net.minecraft.text.Text;
+ import net.minecraft.util.Identifier;
+-import net.minecraft.util.crash.CrashException;
+-import net.minecraft.util.crash.CrashReport;
+ import net.wurstclient.WurstClient;
+ import net.wurstclient.options.WurstOptionsScreen;
+ 
+@@ -76,7 +74,7 @@
+ 		int fh = 16;
+ 		float u = 0;
+ 		float v = 0;
+-		context.drawTexture(WURST_TEXTURE, x, y, u, v, w, h, fw, fh);
++		// context.drawTexture(WURST_TEXTURE, x, y, u, v, w, h, fw, fh);
+ 		
+ 		GL11.glDisable(GL11.GL_BLEND);
+ 	}
+@@ -93,27 +91,18 @@
+ 			ClickableWidget button = buttons.get(i);
+ 			
+ 			// insert Wurst button in place of feedback/report row
+-			if(isFeedbackButton(button))
++			if(isModsButton(button))
+ 			{
+ 				buttonY = button.getY();
+ 				buttonI = i;
++				button.setDimensions(196 / 2, 20);
++				button.setPosition((width / 2) + 4, buttonY);
+ 			}
+-			
+-			// make feedback/report buttons invisible
+-			// (removing them completely would break ModMenu)
+-			if(isFeedbackButton(button) || isBugReportButton(button))
+-				button.visible = false;
+ 		}
+-		
+-		if(buttonY == -1 || buttonI == -1)
+-			throw new CrashException(
+-				CrashReport.create(new IllegalStateException(),
+-					"Someone deleted the Feedback button!"));
+ 		
+ 		wurstOptionsButton = ButtonWidget
+-			.builder(Text.literal("            Options"),
+-				b -> openWurstOptions())
+-			.dimensions(width / 2 - 102, buttonY, 204, 20).build();
++			.builder(Text.literal("LHackOptions..."), b -> openWurstOptions())
++			.dimensions((width / 2) - 102, buttonY, 196 / 2, 20).build();
+ 		buttons.add(wurstOptionsButton);
+ 	}
+ 	
+@@ -134,9 +123,20 @@
+ 			|| hasTrKey(button, "menu.server_links");
+ 	}
+ 	
++	private boolean isModsButton(ClickableWidget button)
++	{
++		return hasTrKey(button, "Mods") || hasTrKey(button, "modmenu.title");
++	}
++	
+ 	private boolean hasTrKey(ClickableWidget button, String key)
+ 	{
+ 		String message = button.getMessage().getString();
+-		return message != null && message.equals(I18n.translate(key));
++		return message != null
++			&& (message.equals(key) || message.equals(I18n.translate(key)));
++	}
++	
++	private String toTrKey(ClickableWidget button)
++	{
++		return button.getMessage().getString();
+ 	}
+ }

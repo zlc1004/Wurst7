@@ -1,0 +1,20 @@
+Index: src/main/java/net/wurstclient/hack/HackList.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/net/wurstclient/hack/HackList.java b/src/main/java/net/wurstclient/hack/HackList.java
+--- a/src/main/java/net/wurstclient/hack/HackList.java	(revision 96786bbce9ac3a2b5a8294ee2079ead6acfd271f)
++++ b/src/main/java/net/wurstclient/hack/HackList.java	(date 1737835562091)
+@@ -184,6 +184,11 @@
+ 	public final TrueSightHack trueSightHack = new TrueSightHack();
+ 	public final TunnellerHack tunnellerHack = new TunnellerHack();
+ 	public final XRayHack xRayHack = new XRayHack();
++	public final BookDupeHack bookDupeHack = new BookDupeHack();
++	public final BookKickHack bookKickHack = new BookKickHack();
++	public final OpSignHack opSignHack = new OpSignHack();
++	
++	public final AutoSellHack autoSellHack = new AutoSellHack();
+ 	
+ 	private final TreeMap<String, Hack> hax =
+ 		new TreeMap<>(String::compareToIgnoreCase);

@@ -1,0 +1,18 @@
+Index: src/main/java/net/wurstclient/other_features/WurstCapesOtf.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/net/wurstclient/other_features/WurstCapesOtf.java b/src/main/java/net/wurstclient/other_features/WurstCapesOtf.java
+--- a/src/main/java/net/wurstclient/other_features/WurstCapesOtf.java	(revision 96786bbce9ac3a2b5a8294ee2079ead6acfd271f)
++++ b/src/main/java/net/wurstclient/other_features/WurstCapesOtf.java	(date 1736021040147)
+@@ -15,7 +15,7 @@
+ {
+ 	public WurstCapesOtf()
+ 	{
+-		super("WurstCapes",
+-			"Wurst has its own capes! Only Wurst users can see them.");
++		super("KoboshCapes",
++			"Kobosh has its own capes! Only Wurst users can see them.");
+ 	}
+ }

@@ -1,0 +1,24 @@
+Index: src/main/java/net/wurstclient/hud/WurstLogo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/net/wurstclient/hud/WurstLogo.java b/src/main/java/net/wurstclient/hud/WurstLogo.java
+--- a/src/main/java/net/wurstclient/hud/WurstLogo.java	(revision 96786bbce9ac3a2b5a8294ee2079ead6acfd271f)
++++ b/src/main/java/net/wurstclient/hud/WurstLogo.java	(date 1736021054188)
+@@ -66,11 +66,13 @@
+ 	
+ 	private String getVersionString()
+ 	{
+-		String version = "v" + WurstClient.VERSION;
++		String version = "Kobosh joei client";
+ 		version += " MC" + WurstClient.MC_VERSION;
+ 		
+ 		if(WurstClient.INSTANCE.getUpdater().isOutdated())
+-			version += " (outdated)";
++			version += "";
++		
++		// version += " built with kobosh joei";
+ 		
+ 		return version;
+ 	}

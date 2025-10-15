@@ -1,0 +1,17 @@
+Index: src/main/java/net/wurstclient/mixin/DisconnectedScreenMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/net/wurstclient/mixin/DisconnectedScreenMixin.java b/src/main/java/net/wurstclient/mixin/DisconnectedScreenMixin.java
+--- a/src/main/java/net/wurstclient/mixin/DisconnectedScreenMixin.java	(revision 96786bbce9ac3a2b5a8294ee2079ead6acfd271f)
++++ b/src/main/java/net/wurstclient/mixin/DisconnectedScreenMixin.java	(date 1736021040160)
+@@ -78,7 +78,7 @@
+ 		ButtonWidget reconnectButton = grid.add(
+ 			ButtonWidget.builder(Text.literal("Reconnect"),
+ 				b -> LastServerRememberer.reconnect(parent)).build(),
+-			grid.copyPositioner().margin(2).marginTop(-6));
++			grid.copyPositioner().margin(2).marginTop(-8));
+ 		
+ 		autoReconnectButton = grid.add(
+ 			ButtonWidget.builder(Text.literal("AutoReconnect"),

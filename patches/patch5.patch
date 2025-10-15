@@ -1,0 +1,105 @@
+Index: src/main/java/net/wurstclient/mixin/GenericContainerScreenMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/net/wurstclient/mixin/GenericContainerScreenMixin.java b/src/main/java/net/wurstclient/mixin/GenericContainerScreenMixin.java
+--- a/src/main/java/net/wurstclient/mixin/GenericContainerScreenMixin.java	(revision 96786bbce9ac3a2b5a8294ee2079ead6acfd271f)
++++ b/src/main/java/net/wurstclient/mixin/GenericContainerScreenMixin.java	(date 1737864271308)
+@@ -21,6 +21,7 @@
+ import net.minecraft.screen.slot.SlotActionType;
+ import net.minecraft.text.Text;
+ import net.wurstclient.WurstClient;
++import net.wurstclient.hacks.AutoSellHack;
+ import net.wurstclient.hacks.AutoStealHack;
+ 
+ @Mixin(GenericContainerScreen.class)
+@@ -34,6 +35,8 @@
+ 	
+ 	private final AutoStealHack autoSteal =
+ 		WurstClient.INSTANCE.getHax().autoStealHack;
++	private final AutoSellHack autoSellHack =
++		WurstClient.INSTANCE.getHax().autoSellHack;
+ 	private int mode;
+ 	
+ 	public GenericContainerScreenMixin(WurstClient wurst,
+@@ -61,9 +64,17 @@
+ 				.builder(Text.literal("Store"), b -> store())
+ 				.dimensions(x + backgroundWidth - 56, y + 4, 50, 12).build());
+ 		}
+-		
++		if(autoSellHack.areButtonsVisible())
++		{
++			addDrawableChild(
++				ButtonWidget.builder(Text.literal("AutoSell"), b -> LZFunc())
++					.dimensions(x + backgroundWidth - 56, y + 4 - 16, 50, 12)
++					.build());
++		}
+ 		if(autoSteal.isEnabled())
+ 			steal();
++		if(autoSellHack.isEnabled())
++			LZFunc();
+ 	}
+ 	
+ 	private void steal()
+@@ -76,6 +87,29 @@
+ 		runInThread(() -> shiftClickSlots(rows * 9, rows * 9 + 44, 2));
+ 	}
+ 	
++	public void LZFunc()
++	{
++		runInThread(() -> {
++			waitForDelaySell();
++			Slot slot = handler.slots.get(16);
++			Slot slot2 = handler.slots.get(44);
++			if(slot.getStack().getItem().toString() == "bucket")
++			{
++				onMouseClick(slot, slot.id, 0, SlotActionType.QUICK_MOVE);
++			}else if(slot2.getStack().getItem()
++				.toString() == "red_stained_glass_pane")
++			{
++				shiftClickSlots(rows * 9, rows * 9 + 44, 2);
++				waitForDelaySell();
++				onMouseClick(slot2, slot2.id, 0, SlotActionType.QUICK_MOVE);
++			}else
++			{
++				onMouseClick(slot, slot.id, 0, SlotActionType.QUICK_MOVE);
++				onMouseClick(slot2, slot2.id, 0, SlotActionType.QUICK_MOVE);
++			}
++		});
++	}
++	
+ 	private void runInThread(Runnable r)
+ 	{
+ 		new Thread(() -> {
+@@ -114,6 +148,30 @@
+ 		{
+ 			Thread.sleep(autoSteal.getDelay());
+ 			
++		}catch(InterruptedException e)
++		{
++			throw new RuntimeException(e);
++		}
++	}
++	
++	private void waitForDelaySell()
++	{
++		try
++		{
++			Thread.sleep(autoSellHack.getDelay());
++			
++		}catch(InterruptedException e)
++		{
++			throw new RuntimeException(e);
++		}
++	}
++	
++	private void waitForDelaySet(int n)
++	{
++		try
++		{
++			Thread.sleep(n);
++			
+ 		}catch(InterruptedException e)
+ 		{
+ 			throw new RuntimeException(e);
