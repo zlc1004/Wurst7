@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Kobosh.
+ * Copyright (c) 2014-2025 Wurst-Imperium and contributors.
  *
  * This source code is subject to the terms of the GNU General Public
  * License, version 3. If a copy of the GPL was not distributed with this
@@ -25,7 +25,7 @@ public final class BookKickHack extends Hack
 		super("BookKick");
 		setCategory(Category.ITEMS);
 	}
-
+	
 	@Override
 	protected void onEnable()
 	{
