@@ -7,7 +7,9 @@
  */
 package net.wurstclient.hacks;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -60,7 +62,18 @@ public final class ItemTpHack extends Hack implements UpdateListener
 				+ "Slower but can help with anti-cheat plugins.",
 			false);
 	
+	private final CheckboxSetting checkPushback =
+		new CheckboxSetting("Check pushback",
+			"Detects when server resets position due to wall blocking.\n"
+				+ "Automatically switches to next closest item when blocked.",
+			true);
+	
 	private long lastTeleportTime = 0;
+	private Vec3d positionBeforeTp = null;
+	private Vec3d expectedPosition = null;
+	private long teleportTimestamp = 0;
+	private boolean waitingForPushbackCheck = false;
+	private List<Entity> excludedItems = new ArrayList<>();
 	
 	public ItemTpHack()
 	{
@@ -74,12 +87,18 @@ public final class ItemTpHack extends Hack implements UpdateListener
 		addSetting(autoDisable);
 		addSetting(silent);
 		addSetting(checkLOS);
+		addSetting(checkPushback);
 	}
 	
 	@Override
 	protected void onEnable()
 	{
 		lastTeleportTime = 0;
+		positionBeforeTp = null;
+		expectedPosition = null;
+		teleportTimestamp = 0;
+		waitingForPushbackCheck = false;
+		excludedItems.clear();
 		EVENTS.add(UpdateListener.class, this);
 	}
 	
@@ -92,36 +111,102 @@ public final class ItemTpHack extends Hack implements UpdateListener
 	@Override
 	public void onUpdate()
 	{
-		// Check cooldown
+		ClientPlayerEntity player = MC.player;
+		if(player == null || MC.world == null)
+			return;
+		
 		long currentTime = System.currentTimeMillis();
+		
+		// Check for pushback if we're waiting for it
+		if(waitingForPushbackCheck && checkPushback.isChecked())
+		{
+			// Wait at least 2 ticks (100ms) for server to respond
+			if(currentTime - teleportTimestamp >= 100)
+			{
+				Vec3d currentPos = player.getEntityPos();
+				
+				// Check if we got pushed back (within 0.5 blocks of original
+				// position)
+				if(positionBeforeTp != null && expectedPosition != null)
+				{
+					double distanceFromOriginal =
+						currentPos.distanceTo(positionBeforeTp);
+					double distanceFromExpected =
+						currentPos.distanceTo(expectedPosition);
+					
+					// If we're much closer to original position than expected,
+					// we got pushed back
+					if(distanceFromOriginal < 0.5 && distanceFromExpected > 1.0)
+					{
+						if(!silent.isChecked())
+							ChatUtils.message(
+								"Pushback detected, trying next item...");
+							
+						// Add the current target to excluded list and try next
+						// item
+						Entity lastTarget = findClosestItem(player, false);
+						if(lastTarget != null)
+							excludedItems.add(lastTarget);
+							
+						// Clear pushback check state and continue to find next
+						// item
+						waitingForPushbackCheck = false;
+						positionBeforeTp = null;
+						expectedPosition = null;
+						
+						// Don't return, let it find next item immediately
+					}else
+					{
+						// Teleport was successful, clear state
+						waitingForPushbackCheck = false;
+						positionBeforeTp = null;
+						expectedPosition = null;
+						excludedItems.clear(); // Reset excluded items on
+												// successful teleport
+						return;
+					}
+				}else
+				{
+					// Clear state if we don't have proper tracking data
+					waitingForPushbackCheck = false;
+					positionBeforeTp = null;
+					expectedPosition = null;
+				}
+			}else
+			{
+				// Still waiting for pushback check
+				return;
+			}
+		}
+		
+		// Check cooldown
 		long cooldownMs = (long)(cooldown.getValueI() * 50); // Convert ticks to
 																// ms
 		if(currentTime - lastTeleportTime < cooldownMs)
 			return;
 		
-		ClientPlayerEntity player = MC.player;
-		if(player == null || MC.world == null)
-			return;
-		
-		// Find closest item entity
-		double rangeSq = Math.pow(range.getValue(), 2);
-		Stream<Entity> stream = StreamSupport
-			.stream(MC.world.getEntities().spliterator(), false)
-			.filter(e -> e instanceof ItemEntity).filter(e -> !e.isRemoved())
-			.filter(e -> player.squaredDistanceTo(e) <= rangeSq);
-		
-		Entity closestItem =
-			stream.min(Comparator.comparingDouble(player::squaredDistanceTo))
-				.orElse(null);
+		// Find closest item entity (excluding ones that caused pushback)
+		Entity closestItem = findClosestItem(player, true);
 		
 		if(closestItem == null)
 		{
-			if(autoDisable.isChecked())
+			// If no items available, try clearing excluded items and search
+			// again
+			if(!excludedItems.isEmpty())
 			{
-				ChatUtils.message("No items in range. Disabling ItemTP.");
-				setEnabled(false);
+				excludedItems.clear();
+				closestItem = findClosestItem(player, true);
 			}
-			return;
+			
+			if(closestItem == null)
+			{
+				if(autoDisable.isChecked())
+				{
+					ChatUtils.message("No items in range. Disabling ItemTP.");
+					setEnabled(false);
+				}
+				return;
+			}
 		}
 		
 		// Check line of sight if enabled
@@ -151,6 +236,15 @@ public final class ItemTpHack extends Hack implements UpdateListener
 			targetZ = closestItem.getZ();
 		}
 		
+		// Record position before teleport for pushback detection
+		if(checkPushback.isChecked())
+		{
+			positionBeforeTp = player.getEntityPos();
+			expectedPosition = new Vec3d(targetX, targetY, targetZ);
+			teleportTimestamp = currentTime;
+			waitingForPushbackCheck = true;
+		}
+		
 		// Teleport to item
 		if(directTeleport.isChecked())
 		{
@@ -159,8 +253,13 @@ public final class ItemTpHack extends Hack implements UpdateListener
 		}else
 		{
 			// Use TpAura-style random teleport near calculated position
-			player.setPosition(targetX + random.nextInt(3) * 2 - 2, targetY,
-				targetZ + random.nextInt(3) * 2 - 2);
+			double finalX = targetX + random.nextInt(3) * 2 - 2;
+			double finalZ = targetZ + random.nextInt(3) * 2 - 2;
+			player.setPosition(finalX, targetY, finalZ);
+			
+			// Update expected position for pushback detection
+			if(checkPushback.isChecked())
+				expectedPosition = new Vec3d(finalX, targetY, finalZ);
 		}
 		
 		lastTeleportTime = currentTime;
@@ -173,6 +272,23 @@ public final class ItemTpHack extends Hack implements UpdateListener
 				"Teleported to " + itemEntity.getStack().getName().getString()
 					+ " (" + itemEntity.getStack().getCount() + ")");
 		}
+	}
+	
+	private Entity findClosestItem(ClientPlayerEntity player,
+		boolean excludeBlocked)
+	{
+		double rangeSq = Math.pow(range.getValue(), 2);
+		Stream<Entity> stream = StreamSupport
+			.stream(MC.world.getEntities().spliterator(), false)
+			.filter(e -> e instanceof ItemEntity).filter(e -> !e.isRemoved())
+			.filter(e -> player.squaredDistanceTo(e) <= rangeSq);
+		
+		// Exclude items that caused pushback if requested
+		if(excludeBlocked && !excludedItems.isEmpty())
+			stream = stream.filter(e -> !excludedItems.contains(e));
+		
+		return stream.min(Comparator.comparingDouble(player::squaredDistanceTo))
+			.orElse(null);
 	}
 	
 	@Override
