@@ -208,28 +208,20 @@ public final class SeedXRayHack extends Hack
 		
 		try
 		{
-			Set<Vec3d> orePositions =
-				OreSimulator.simulateOresInChunk(worldSeed, chunkPos,
-					enabledOres, airCheck.getSelected() != AirCheckMode.OFF);
-			
-			// Group ores by type
+			// Simulate each ore type individually to maintain proper tracking
 			Map<OreData, Set<Vec3d>> chunkOres = new ConcurrentHashMap<>();
-			for(Vec3d pos : orePositions)
+			
+			for(OreData ore : enabledOres)
 			{
-				// Find which ore type this position belongs to
-				BlockPos blockPos = BlockPos.ofFloored(pos);
-				for(OreData ore : enabledOres)
-				{
-					// Simple assignment - in a real implementation we'd track
-					// this better
-					if(pos.getY() >= ore.heightRange.getMin()
-						&& pos.getY() <= ore.heightRange.getMax())
-					{
-						chunkOres.computeIfAbsent(ore,
-							k -> ConcurrentHashMap.newKeySet()).add(pos);
-						break; // Take first matching ore type
-					}
-				}
+				List<OreData> singleOre = new ArrayList<>();
+				singleOre.add(ore);
+				
+				Set<Vec3d> orePositions =
+					OreSimulator.simulateOresInChunk(worldSeed, chunkPos,
+						singleOre, airCheck.getSelected() != AirCheckMode.OFF);
+				
+				if(!orePositions.isEmpty())
+					chunkOres.put(ore, orePositions);
 			}
 			
 			chunkCache.put(chunkPos, chunkOres);
@@ -254,9 +246,9 @@ public final class SeedXRayHack extends Hack
 		matrixStack.push();
 		RenderUtils.applyRegionalRenderOffset(matrixStack, bufferRegion);
 		
-		float[] rainbow = RenderUtils.getRainbowColor();
-		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_LINES, rainbow,
-			0.8F);
+		// Use white color since each vertex already has its own color
+		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_LINES,
+			new float[]{1.0F, 1.0F, 1.0F}, 0.8F);
 		
 		matrixStack.pop();
 	}
@@ -267,74 +259,71 @@ public final class SeedXRayHack extends Hack
 		if(bufferRegion != null && bufferRegion.equals(region))
 			return;
 		
-		ArrayList<Vec3d> visibleOres = new ArrayList<>();
-		
-		// Collect all visible ore positions
-		for(Map.Entry<ChunkPos, Map<OreData, Set<Vec3d>>> chunkEntry : chunkCache
-			.entrySet())
-		{
-			Map<OreData, Set<Vec3d>> chunkOres = chunkEntry.getValue();
-			
-			for(Map.Entry<OreData, Set<Vec3d>> oreEntry : chunkOres.entrySet())
-			{
-				OreData ore = oreEntry.getKey();
-				if(!ore.enabled.isChecked())
-					continue;
-				
-				Set<Vec3d> positions = oreEntry.getValue();
-				
-				for(Vec3d pos : positions)
-				{
-					if(onlyExposed.isChecked()
-						&& !isExposed(BlockPos.ofFloored(pos)))
-						continue;
-					
-					visibleOres.add(pos);
-				}
-			}
-		}
-		
 		if(vertexBuffer != null)
 			vertexBuffer.close();
 		
 		vertexBuffer = EasyVertexBuffer.createAndUpload(DrawMode.DEBUG_LINES,
 			VertexFormats.POSITION_COLOR, buffer -> {
-				for(Vec3d pos : visibleOres)
+				// Collect ore positions with their types for proper coloring
+				for(Map.Entry<ChunkPos, Map<OreData, Set<Vec3d>>> chunkEntry : chunkCache
+					.entrySet())
 				{
-					int x = (int)pos.x - region.x();
-					int y = (int)pos.y;
-					int z = (int)pos.z - region.z();
+					Map<OreData, Set<Vec3d>> chunkOres = chunkEntry.getValue();
 					
-					// Draw cube outline (12 lines)
-					// Bottom face
-					buffer.vertex(x, y, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x, y, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x, y, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x, y, z).color(0xFFFFFFFF);
-					
-					// Top face
-					buffer.vertex(x, y + 1, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y + 1, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y + 1, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y + 1, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y + 1, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x, y + 1, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x, y + 1, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x, y + 1, z).color(0xFFFFFFFF);
-					
-					// Vertical edges
-					buffer.vertex(x, y, z).color(0xFFFFFFFF);
-					buffer.vertex(x, y + 1, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y + 1, z).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x + 1, y + 1, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x, y, z + 1).color(0xFFFFFFFF);
-					buffer.vertex(x, y + 1, z + 1).color(0xFFFFFFFF);
+					for(Map.Entry<OreData, Set<Vec3d>> oreEntry : chunkOres
+						.entrySet())
+					{
+						OreData ore = oreEntry.getKey();
+						if(!ore.enabled.isChecked())
+							continue;
+						
+						Set<Vec3d> positions = oreEntry.getValue();
+						int color = ore.color | 0xFF000000; // Ensure alpha is
+															// set
+						
+						for(Vec3d pos : positions)
+						{
+							if(onlyExposed.isChecked()
+								&& !isExposed(BlockPos.ofFloored(pos)))
+								continue;
+							
+							float x = (float)(pos.x - region.x());
+							float y = (float)pos.y;
+							float z = (float)(pos.z - region.z());
+							
+							// Draw cube outline (12 lines forming a wireframe
+							// cube)
+							// Bottom face
+							buffer.vertex(x, y, z).color(color);
+							buffer.vertex(x + 1, y, z).color(color);
+							buffer.vertex(x + 1, y, z).color(color);
+							buffer.vertex(x + 1, y, z + 1).color(color);
+							buffer.vertex(x + 1, y, z + 1).color(color);
+							buffer.vertex(x, y, z + 1).color(color);
+							buffer.vertex(x, y, z + 1).color(color);
+							buffer.vertex(x, y, z).color(color);
+							
+							// Top face
+							buffer.vertex(x, y + 1, z).color(color);
+							buffer.vertex(x + 1, y + 1, z).color(color);
+							buffer.vertex(x + 1, y + 1, z).color(color);
+							buffer.vertex(x + 1, y + 1, z + 1).color(color);
+							buffer.vertex(x + 1, y + 1, z + 1).color(color);
+							buffer.vertex(x, y + 1, z + 1).color(color);
+							buffer.vertex(x, y + 1, z + 1).color(color);
+							buffer.vertex(x, y + 1, z).color(color);
+							
+							// Vertical edges
+							buffer.vertex(x, y, z).color(color);
+							buffer.vertex(x, y + 1, z).color(color);
+							buffer.vertex(x + 1, y, z).color(color);
+							buffer.vertex(x + 1, y + 1, z).color(color);
+							buffer.vertex(x + 1, y, z + 1).color(color);
+							buffer.vertex(x + 1, y + 1, z + 1).color(color);
+							buffer.vertex(x, y, z + 1).color(color);
+							buffer.vertex(x, y + 1, z + 1).color(color);
+						}
+					}
 				}
 			});
 		
