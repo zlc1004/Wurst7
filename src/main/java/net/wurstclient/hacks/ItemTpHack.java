@@ -16,6 +16,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.wurstclient.Category;
 import net.wurstclient.SearchTags;
 import net.wurstclient.events.UpdateListener;
@@ -23,6 +24,7 @@ import net.wurstclient.hack.Hack;
 import net.wurstclient.settings.CheckboxSetting;
 import net.wurstclient.settings.SliderSetting;
 import net.wurstclient.settings.SliderSetting.ValueDisplay;
+import net.wurstclient.util.BlockUtils;
 import net.wurstclient.util.ChatUtils;
 
 @SearchTags({"ItemTp", "item tp", "item teleport", "AutoPickup", "auto pickup"})
@@ -52,6 +54,12 @@ public final class ItemTpHack extends Hack implements UpdateListener
 	private final CheckboxSetting silent = new CheckboxSetting("Silent",
 		"Don't send chat messages when teleporting to items.", true);
 	
+	private final CheckboxSetting checkLOS =
+		new CheckboxSetting("Check line of sight",
+			"Ensures that you don't teleport to items through blocks.\n\n"
+				+ "Slower but can help with anti-cheat plugins.",
+			false);
+	
 	private long lastTeleportTime = 0;
 	
 	public ItemTpHack()
@@ -65,6 +73,7 @@ public final class ItemTpHack extends Hack implements UpdateListener
 		addSetting(blockCenter);
 		addSetting(autoDisable);
 		addSetting(silent);
+		addSetting(checkLOS);
 	}
 	
 	@Override
@@ -113,6 +122,14 @@ public final class ItemTpHack extends Hack implements UpdateListener
 				setEnabled(false);
 			}
 			return;
+		}
+		
+		// Check line of sight if enabled
+		if(checkLOS.isChecked())
+		{
+			Vec3d itemCenter = closestItem.getBoundingBox().getCenter();
+			if(!BlockUtils.hasLineOfSight(itemCenter))
+				return; // Skip items that aren't visible
 		}
 		
 		// Calculate teleport position
