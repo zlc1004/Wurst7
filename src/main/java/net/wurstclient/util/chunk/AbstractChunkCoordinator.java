@@ -120,6 +120,21 @@ public abstract class AbstractChunkCoordinator implements PacketInputListener
 		setQuery((pos, state) -> block == state.getBlock());
 	}
 	
+	public void setTargetBlocks(java.util.List<Block> blocks)
+	{
+		Objects.requireNonNull(blocks);
+		if(blocks.isEmpty())
+			throw new IllegalArgumentException("blocks list cannot be empty");
+		
+		// Create query that matches any of the specified blocks
+		setQuery((pos, state) -> {
+			for(Block block : blocks)
+				if(block == state.getBlock())
+					return true;
+			return false;
+		});
+	}
+	
 	protected HashSet<ChunkPos> clearChunksToUpdate()
 	{
 		synchronized(chunksToUpdate)
