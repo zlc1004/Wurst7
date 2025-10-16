@@ -49,6 +49,9 @@ public final class ItemTpHack extends Hack implements UpdateListener
 		new CheckboxSetting("Auto disable",
 			"Automatically disables when no items are in range.", false);
 	
+	private final CheckboxSetting silent = new CheckboxSetting("Silent",
+		"Don't send chat messages when teleporting to items.", true);
+	
 	private long lastTeleportTime = 0;
 	
 	public ItemTpHack()
@@ -61,6 +64,7 @@ public final class ItemTpHack extends Hack implements UpdateListener
 		addSetting(directTeleport);
 		addSetting(blockCenter);
 		addSetting(autoDisable);
+		addSetting(silent);
 	}
 	
 	@Override
@@ -144,10 +148,14 @@ public final class ItemTpHack extends Hack implements UpdateListener
 		
 		lastTeleportTime = currentTime;
 		
-		ItemEntity itemEntity = (ItemEntity)closestItem;
-		ChatUtils.message(
-			"Teleported to " + itemEntity.getStack().getName().getString()
-				+ " (" + itemEntity.getStack().getCount() + ")");
+		// Send chat message if not in silent mode
+		if(!silent.isChecked())
+		{
+			ItemEntity itemEntity = (ItemEntity)closestItem;
+			ChatUtils.message(
+				"Teleported to " + itemEntity.getStack().getName().getString()
+					+ " (" + itemEntity.getStack().getCount() + ")");
+		}
 	}
 	
 	@Override
