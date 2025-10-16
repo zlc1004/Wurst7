@@ -7,6 +7,8 @@
  */
 package net.wurstclient.hacks;
 
+import org.lwjgl.glfw.GLFW;
+
 import net.minecraft.client.gui.DrawContext;
 import net.wurstclient.Category;
 import net.wurstclient.SearchTags;
@@ -29,6 +31,20 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 			+ "This creates the timing window needed for attribute swapping.",
 		1, 1, 9, 1, ValueDisplay.INTEGER);
 	
+	private final SliderSetting waitTime = new SliderSetting("Wait time",
+		"Number of ticks to wait before swapping slots.", 0, 0, 1, 1,
+		ValueDisplay.INTEGER);
+	
+	private final CheckboxSetting autoSwitchBack = new CheckboxSetting(
+		"Auto switch back",
+		"Automatically switch back to original slot when button is released.",
+		false);
+	
+	private final SliderSetting switchBackDelay =
+		new SliderSetting("Switch back delay",
+			"Number of ticks to wait before switching back to original slot.",
+			5, 0, 20, 1, ValueDisplay.INTEGER);
+	
 	private final CheckboxSetting enableLeftClick = new CheckboxSetting(
 		"Left Click", "Enable swapping on left click (attack).", true);
 	
@@ -37,12 +53,20 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 	
 	private boolean shouldSwap = false;
 	private int ticksToWait = 0;
+	private int originalSlot = -1;
+	private boolean shouldSwitchBack = false;
+	private int switchBackTicks = 0;
+	private boolean leftButtonWasPressed = false;
+	private boolean rightButtonWasPressed = false;
 	
 	public AttrSwapHack()
 	{
 		super("AttrSwap");
 		setCategory(Category.ITEMS);
 		addSetting(targetSlot);
+		addSetting(waitTime);
+		addSetting(autoSwitchBack);
+		addSetting(switchBackDelay);
 		addSetting(enableLeftClick);
 		addSetting(enableRightClick);
 	}
@@ -71,6 +95,11 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 		EVENTS.remove(GUIRenderListener.class, this);
 		shouldSwap = false;
 		ticksToWait = 0;
+		originalSlot = -1;
+		shouldSwitchBack = false;
+		switchBackTicks = 0;
+		leftButtonWasPressed = false;
+		rightButtonWasPressed = false;
 	}
 	
 	@Override
@@ -79,9 +108,14 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 		if(MC.player == null || !enableLeftClick.isChecked())
 			return;
 		
-		// Schedule slot swap for next tick
+		// Store original slot before swapping
+		if(originalSlot == -1)
+			originalSlot = MC.player.getInventory().getSelectedSlot();
+		
+		// Schedule slot swap with configured wait time
 		shouldSwap = true;
-		ticksToWait = 1;
+		ticksToWait = waitTime.getValueI();
+		leftButtonWasPressed = true;
 	}
 	
 	@Override
@@ -90,9 +124,14 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 		if(MC.player == null || !enableRightClick.isChecked())
 			return;
 		
-		// Schedule slot swap for next tick
+		// Store original slot before swapping
+		if(originalSlot == -1)
+			originalSlot = MC.player.getInventory().getSelectedSlot();
+		
+		// Schedule slot swap with configured wait time
 		shouldSwap = true;
-		ticksToWait = 1;
+		ticksToWait = waitTime.getValueI();
+		rightButtonWasPressed = true;
 	}
 	
 	@Override
@@ -101,6 +140,52 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 		if(MC.player == null)
 			return;
 		
+		// Check mouse button states for auto switch back
+		if(autoSwitchBack.isChecked())
+		{
+			long windowHandle = MC.getWindow().getHandle();
+			boolean leftPressed = GLFW.glfwGetMouseButton(windowHandle,
+				GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+			boolean rightPressed = GLFW.glfwGetMouseButton(windowHandle,
+				GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
+			
+			// Check if buttons were released
+			if((leftButtonWasPressed && !leftPressed)
+				|| (rightButtonWasPressed && !rightPressed))
+			{
+				if(originalSlot != -1 && !shouldSwitchBack)
+				{
+					shouldSwitchBack = true;
+					switchBackTicks = switchBackDelay.getValueI();
+				}
+			}
+			
+			// Update button states
+			if(!leftPressed)
+				leftButtonWasPressed = false;
+			if(!rightPressed)
+				rightButtonWasPressed = false;
+		}
+		
+		// Handle switch back logic
+		if(shouldSwitchBack)
+		{
+			if(switchBackTicks > 0)
+			{
+				switchBackTicks--;
+				return;
+			}
+			
+			// Switch back to original slot
+			if(originalSlot != -1)
+			{
+				MC.player.getInventory().setSelectedSlot(originalSlot);
+				originalSlot = -1;
+				shouldSwitchBack = false;
+			}
+		}
+		
+		// Handle initial swap logic
 		if(!shouldSwap)
 			return;
 		
