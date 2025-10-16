@@ -86,7 +86,6 @@ public final class HackList implements UpdateListener
 	public final ChatTranslatorHack chatTranslatorHack =
 		new ChatTranslatorHack();
 	public final ChestEspHack chestEspHack = new ChestEspHack();
-	public final ChorusExploitHack chorusExploitHack = new ChorusExploitHack();
 	public final ClickAuraHack clickAuraHack = new ClickAuraHack();
 	public final ClickGuiHack clickGuiHack = new ClickGuiHack();
 	public final CrashChestHack crashChestHack = new CrashChestHack();
@@ -178,6 +177,8 @@ public final class HackList implements UpdateListener
 	public final SearchHack searchHack = new SearchHack();
 	public final SeedXRayHack seedXRayHack = new SeedXRayHack();
 	public final SkeletonEspHack skeletonEspHack = new SkeletonEspHack();
+	public final SilentDisconnectHack silentDisconnectHack =
+		new SilentDisconnectHack();
 	public final SkinDerpHack skinDerpHack = new SkinDerpHack();
 	public final SneakHack sneakHack = new SneakHack();
 	public final SnowShoeHack snowShoeHack = new SnowShoeHack();
