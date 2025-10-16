@@ -8,7 +8,6 @@
 package net.wurstclient.hacks;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -263,68 +262,71 @@ public final class SeedXRayHack extends Hack
 		if(bufferRegion != null && bufferRegion.equals(region))
 			return;
 		
-		// Collect all ore positions into a HashSet for BlockVertexCompiler
-		HashSet<BlockPos> allOrePositions = new HashSet<>();
-		Map<BlockPos, Integer> oreColors = new HashMap<>();
-		
-		for(Map.Entry<ChunkPos, Map<OreData, Set<Vec3d>>> chunkEntry : chunkCache
-			.entrySet())
-		{
-			Map<OreData, Set<Vec3d>> chunkOres = chunkEntry.getValue();
-			
-			for(Map.Entry<OreData, Set<Vec3d>> oreEntry : chunkOres.entrySet())
-			{
-				OreData ore = oreEntry.getKey();
-				if(!ore.enabled.isChecked())
-					continue;
-				
-				Set<Vec3d> positions = oreEntry.getValue();
-				int color = ore.color | 0xFF000000; // Ensure alpha is set
-				
-				for(Vec3d pos : positions)
-				{
-					BlockPos blockPos = BlockPos.ofFloored(pos);
-					if(onlyExposed.isChecked() && !isExposed(blockPos))
-						continue;
-					
-					allOrePositions.add(blockPos);
-					oreColors.put(blockPos, color);
-				}
-			}
-		}
-		
 		if(vertexBuffer != null)
 			vertexBuffer.close();
 		
-		// Use BlockVertexCompiler to generate solid cube faces
-		ArrayList<int[]> vertices =
-			BlockVertexCompiler.compile(allOrePositions);
+		// Limit total ore count for performance
+		int totalOres = 0;
+		for(Map<OreData, Set<Vec3d>> chunkOres : chunkCache.values())
+		{
+			for(Map.Entry<OreData, Set<Vec3d>> oreEntry : chunkOres.entrySet())
+			{
+				if(oreEntry.getKey().enabled.isChecked())
+					totalOres += oreEntry.getValue().size();
+			}
+		}
+		
+		if(totalOres > 5000) // Performance limit
+		{
+			ChatUtils.warning("Too many ores to render (" + totalOres
+				+ "). Reduce range or disable some ore types.");
+			bufferRegion = region;
+			return;
+		}
 		
 		vertexBuffer = EasyVertexBuffer.createAndUpload(DrawMode.QUADS,
 			VertexFormats.POSITION_COLOR, buffer -> {
-				for(int[] vertex : vertices)
+				// Render each ore type separately for better performance
+				for(Map.Entry<ChunkPos, Map<OreData, Set<Vec3d>>> chunkEntry : chunkCache
+					.entrySet())
 				{
-					// Get the block position from vertex coordinates
-					BlockPos blockPos =
-						new BlockPos(vertex[0], vertex[1], vertex[2]);
+					Map<OreData, Set<Vec3d>> chunkOres = chunkEntry.getValue();
 					
-					// Find the closest ore position to get the right color
-					int color = 0xFFFFFFFF; // Default white
-					double minDistance = Double.MAX_VALUE;
-					for(Map.Entry<BlockPos, Integer> entry : oreColors
+					for(Map.Entry<OreData, Set<Vec3d>> oreEntry : chunkOres
 						.entrySet())
 					{
-						double distance =
-							blockPos.getSquaredDistance(entry.getKey());
-						if(distance < minDistance)
+						OreData ore = oreEntry.getKey();
+						if(!ore.enabled.isChecked())
+							continue;
+						
+						Set<Vec3d> positions = oreEntry.getValue();
+						int color = ore.color | 0xFF000000; // Ensure alpha is
+															// set
+						
+						// Convert to BlockPos for face compilation
+						HashSet<BlockPos> oreBlocks = new HashSet<>();
+						for(Vec3d pos : positions)
 						{
-							minDistance = distance;
-							color = entry.getValue();
+							BlockPos blockPos = BlockPos.ofFloored(pos);
+							if(onlyExposed.isChecked() && !isExposed(blockPos))
+								continue;
+							oreBlocks.add(blockPos);
+						}
+						
+						if(oreBlocks.isEmpty())
+							continue;
+						
+						// Generate vertices for this ore type
+						ArrayList<int[]> vertices =
+							BlockVertexCompiler.compile(oreBlocks);
+						
+						// Add vertices with consistent color
+						for(int[] vertex : vertices)
+						{
+							buffer.vertex(vertex[0] - region.x(), vertex[1],
+								vertex[2] - region.z()).color(color);
 						}
 					}
-					
-					buffer.vertex(vertex[0] - region.x(), vertex[1],
-						vertex[2] - region.z()).color(color);
 				}
 			});
 		
