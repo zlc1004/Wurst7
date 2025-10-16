@@ -37,11 +37,11 @@ public abstract class ClientCommonNetworkHandlerMixin
 	{
 		PacketOutputEvent event = new PacketOutputEvent(packet);
 		EventManager.fire(event);
-
+		
 		if(!event.isCancelled())
 			original.call(connection, event.getPacket());
 	}
-
+	
 	@Inject(method = "onDisconnected", at = @At("HEAD"), cancellable = true)
 	private void onDisconnected(DisconnectionInfo info, CallbackInfo ci)
 	{
