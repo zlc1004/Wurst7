@@ -26,6 +26,7 @@ public final class CmdList
 	public final BlinkCmd blinkCmd = new BlinkCmd();
 	public final BlockListCmd blockListCmd = new BlockListCmd();
 	public final ClearCmd clearCmd = new ClearCmd();
+	public final ChorusExploitCmd chorusExploitCmd = new ChorusExploitCmd();
 	public final CopyItemCmd copyitemCmd = new CopyItemCmd();
 	public final DamageCmd damageCmd = new DamageCmd();
 	public final DigCmd digCmd = new DigCmd();
