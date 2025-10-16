@@ -41,6 +41,7 @@ public final class HackList implements UpdateListener
 	public final AntiSpamHack antiSpamHack = new AntiSpamHack();
 	public final AntiWaterPushHack antiWaterPushHack = new AntiWaterPushHack();
 	public final AntiWobbleHack antiWobbleHack = new AntiWobbleHack();
+	public final AntiVanishHack antiVanishHack = new AntiVanishHack();
 	public final ArrowDmgHack arrowDmgHack = new ArrowDmgHack();
 	public final AttrSwapHack attrSwapHack = new AttrSwapHack();
 	public final AutoArmorHack autoArmorHack = new AutoArmorHack();
@@ -107,6 +108,8 @@ public final class HackList implements UpdateListener
 	public final FreecamHack freecamHack = new FreecamHack();
 	public final FullbrightHack fullbrightHack = new FullbrightHack();
 	public final GlideHack glideHack = new GlideHack();
+	public final GamemodeNotifierHack gamemodeNotifierHack =
+		new GamemodeNotifierHack();
 	public final HandNoClipHack handNoClipHack = new HandNoClipHack();
 	public final HeadRollHack headRollHack = new HeadRollHack();
 	public final HealthTagsHack healthTagsHack = new HealthTagsHack();
