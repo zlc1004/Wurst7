@@ -174,6 +174,7 @@ public final class HackList implements UpdateListener
 	public final ScaffoldWalkHack scaffoldWalkHack = new ScaffoldWalkHack();
 	public final SearchHack searchHack = new SearchHack();
 	public final SeedXRayHack seedXRayHack = new SeedXRayHack();
+	public final SkeletonEspHack skeletonEspHack = new SkeletonEspHack();
 	public final SkinDerpHack skinDerpHack = new SkinDerpHack();
 	public final SneakHack sneakHack = new SneakHack();
 	public final SnowShoeHack snowShoeHack = new SnowShoeHack();
