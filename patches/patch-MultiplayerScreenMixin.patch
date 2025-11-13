@@ -1,0 +1,41 @@
+diff --git a/src/main/java/net/wurstclient/mixin/MultiplayerScreenMixin.java b/src/main/java/net/wurstclient/mixin/MultiplayerScreenMixin.java
+index c20b3fb0..5dfa514e 100644
+--- a/src/main/java/net/wurstclient/mixin/MultiplayerScreenMixin.java
++++ b/src/main/java/net/wurstclient/mixin/MultiplayerScreenMixin.java
+@@ -23,6 +23,8 @@ import net.minecraft.text.Text;
+ import net.wurstclient.WurstClient;
+ import net.wurstclient.mixinterface.IMultiplayerScreen;
+ import net.wurstclient.serverfinder.CleanUpScreen;
++import net.wurstclient.serverfinder.FindPlayersScreen;
++import net.wurstclient.serverfinder.GetPlayersScreen;
+ import net.wurstclient.serverfinder.ServerFinderScreen;
+ import net.wurstclient.util.LastServerRememberer;
+ 
+@@ -52,13 +54,26 @@ public class MultiplayerScreenMixin extends Screen implements IMultiplayerScreen
+ 			.dimensions(width / 2 - 154, 10, 100, 20).build());
+ 		updateLastServerButton();
+ 		
++		addDrawableChild(ButtonWidget
++			.builder(Text.literal("Find Players"),
++				b -> client.setScreen(
++					new FindPlayersScreen((MultiplayerScreen)(Object)this)))
++			.dimensions(width / 2 + 48, height - 54, 100, 20).build());
++		
+ 		addDrawableChild(
+ 			ButtonWidget
+-				.builder(Text.literal("Server Finder"),
++				.builder(Text.literal("ServerSeeker"),
+ 					b -> client.setScreen(new ServerFinderScreen(
+ 						(MultiplayerScreen)(Object)this)))
+ 				.dimensions(width / 2 + 154 + 4, height - 54, 100, 20).build());
+ 		
++		addDrawableChild(ButtonWidget
++			.builder(Text.literal("Get Players"),
++				b -> client.setScreen(
++					new GetPlayersScreen((MultiplayerScreen)(Object)this,
++						java.util.Collections.emptyList())))
++			.dimensions(width / 2 + 48, height - 30, 100, 20).build());
++		
+ 		addDrawableChild(ButtonWidget
+ 			.builder(Text.literal("Clean Up"),
+ 				b -> client.setScreen(

@@ -1,0 +1,13 @@
+diff --git a/src/main/java/net/wurstclient/other_features/WurstLogoOtf.java b/src/main/java/net/wurstclient/other_features/WurstLogoOtf.java
+index 792226ad..c0bce587 100644
+--- a/src/main/java/net/wurstclient/other_features/WurstLogoOtf.java
++++ b/src/main/java/net/wurstclient/other_features/WurstLogoOtf.java
+@@ -33,7 +33,7 @@ public final class WurstLogoOtf extends OtherFeature
+ 	
+ 	public WurstLogoOtf()
+ 	{
+-		super("WurstLogo", "Shows the Wurst logo and version on the screen.");
++		super("KoboshLogo", "Shows the Kobosh logo and version on the screen.");
+ 		addSetting(bgColor);
+ 		addSetting(txtColor);
+ 		addSetting(visibility);

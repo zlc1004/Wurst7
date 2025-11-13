@@ -1,0 +1,19 @@
+diff --git a/src/main/resources/fabric.mod.json b/src/main/resources/fabric.mod.json
+index 97c8fb15..a2786b74 100644
+--- a/src/main/resources/fabric.mod.json
++++ b/src/main/resources/fabric.mod.json
+@@ -2,10 +2,11 @@
+   "schemaVersion": 1,
+   "id": "wurst",
+   "version": "${version}",
+-  "name": "Wurst Client",
+-  "description": "Wurst Wurst Wurst!",
++  "name": "Lucas HAck KoboSh JOeI",
++  "description": "KOBOSH JOEI TRUTH ON TOP",
+   "authors": [
+-    "Alexander01998"
++    "Alexander01998",
++    "@notlucasz228"
+   ],
+   "contact": {
+     "homepage": "https://www.wurstclient.net/modmenu-homepage/",

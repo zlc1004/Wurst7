@@ -1,0 +1,465 @@
+diff --git a/src/main/java/net/wurstclient/serverfinder/ServerFinderScreen.java b/src/main/java/net/wurstclient/serverfinder/ServerFinderScreen.java
+index 9164f46a..93c76224 100644
+--- a/src/main/java/net/wurstclient/serverfinder/ServerFinderScreen.java
++++ b/src/main/java/net/wurstclient/serverfinder/ServerFinderScreen.java
+@@ -7,12 +7,13 @@
+  */
+ package net.wurstclient.serverfinder;
+ 
+-import java.net.InetAddress;
+-import java.net.UnknownHostException;
+-import java.util.ArrayList;
++import java.io.IOException;
++import java.util.List;
++import java.util.concurrent.CompletableFuture;
+ 
+ import org.lwjgl.glfw.GLFW;
+ 
++import net.minecraft.SharedConstants;
+ import net.minecraft.client.gui.Click;
+ import net.minecraft.client.gui.DrawContext;
+ import net.minecraft.client.gui.Drawable;
+@@ -20,6 +21,7 @@ import net.minecraft.client.gui.screen.Screen;
+ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+ import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
+ import net.minecraft.client.gui.widget.ButtonWidget;
++import net.minecraft.client.gui.widget.CheckboxWidget;
+ import net.minecraft.client.gui.widget.TextFieldWidget;
+ import net.minecraft.client.input.KeyInput;
+ import net.minecraft.client.network.ServerInfo;
+@@ -27,64 +29,72 @@ import net.minecraft.client.network.ServerInfo.ServerType;
+ import net.minecraft.client.option.ServerList;
+ import net.minecraft.text.Text;
+ import net.minecraft.util.Colors;
+-import net.minecraft.util.Util;
+ import net.wurstclient.mixinterface.IMultiplayerScreen;
+-import net.wurstclient.util.MathUtils;
++import net.wurstclient.serverfinder.api.ServersRequest;
++import net.wurstclient.serverfinder.api.ServersResponse;
+ 
+ public class ServerFinderScreen extends Screen
+ {
+ 	private final MultiplayerScreen prevScreen;
+ 	
+-	private TextFieldWidget ipBox;
+-	private TextFieldWidget maxThreadsBox;
++	private TextFieldWidget motdBox;
++	private TextFieldWidget minPlayersBox;
++	private TextFieldWidget maxPlayersBox;
++	private CheckboxWidget crackedBox;
+ 	private ButtonWidget searchButton;
+ 	
+ 	private ServerFinderState state;
+-	private int maxThreads;
+-	private int checked;
+-	private int working;
++	private int serversFound;
++	private String lastError;
+ 	
+ 	public ServerFinderScreen(MultiplayerScreen prevScreen)
+ 	{
+-		super(Text.literal("Server Finder"));
++		super(Text.literal("ServerSeeker"));
+ 		this.prevScreen = prevScreen;
+ 	}
+ 	
+ 	@Override
+ 	public void init()
+ 	{
+-		addDrawableChild(searchButton =
+-			ButtonWidget.builder(Text.literal("Search"), b -> searchOrCancel())
+-				.dimensions(width / 2 - 100, height / 4 + 96 + 12, 200, 20)
+-				.build());
+-		searchButton.active = false;
+-		
+-		addDrawableChild(
+-			ButtonWidget
+-				.builder(Text.literal("Tutorial"),
+-					b -> Util.getOperatingSystem().open(
+-						"https://www.wurstclient.net/serverfinder-tutorial/"))
+-				.dimensions(width / 2 - 100, height / 4 + 120 + 12, 200, 20)
+-				.build());
++		addDrawableChild(searchButton = ButtonWidget
++			.builder(Text.literal("Find Servers"), b -> searchOrCancel())
++			.dimensions(width / 2 - 100, height / 4 + 120 + 12, 200, 20)
++			.build());
++		searchButton.active = true;
+ 		
+ 		addDrawableChild(
+ 			ButtonWidget.builder(Text.literal("Back"), b -> close())
+-				.dimensions(width / 2 - 100, height / 4 + 144 + 12, 200, 20)
++				.dimensions(width / 2 - 100, height / 4 + 168 + 12, 200, 20)
+ 				.build());
+ 		
+-		ipBox = new TextFieldWidget(textRenderer, width / 2 - 100,
++		motdBox = new TextFieldWidget(textRenderer, width / 2 - 100,
+ 			height / 4 + 34, 200, 20, Text.empty());
+-		ipBox.setMaxLength(200);
+-		addSelectableChild(ipBox);
+-		setFocused(ipBox);
++		motdBox.setMaxLength(200);
++		motdBox
++			.setPlaceholder(Text.literal("Server description/MOTD (optional)"));
++		addSelectableChild(motdBox);
++		setFocused(motdBox);
+ 		
+-		maxThreadsBox = new TextFieldWidget(textRenderer, width / 2 - 32,
+-			height / 4 + 58, 26, 12, Text.empty());
+-		maxThreadsBox.setMaxLength(3);
+-		maxThreadsBox.setText("128");
+-		addSelectableChild(maxThreadsBox);
++		minPlayersBox = new TextFieldWidget(textRenderer, width / 2 - 150,
++			height / 4 + 68, 90, 20, Text.empty());
++		minPlayersBox.setMaxLength(5);
++		minPlayersBox.setPlaceholder(Text.literal("Min"));
++		addSelectableChild(minPlayersBox);
++		
++		maxPlayersBox = new TextFieldWidget(textRenderer, width / 2 + 10,
++			height / 4 + 68, 90, 20, Text.empty());
++		maxPlayersBox.setMaxLength(5);
++		maxPlayersBox.setPlaceholder(Text.literal("Max"));
++		addSelectableChild(maxPlayersBox);
++		
++		crackedBox = CheckboxWidget
++			.builder(Text.literal("Cracked servers only"), textRenderer)
++			.pos(width / 2 - 100, height / 4 + 96).build();
++		addDrawableChild(crackedBox);
+ 		
+ 		state = ServerFinderState.NOT_RUNNING;
++		serversFound = 0;
++		lastError = null;
+ 	}
+ 	
+ 	private void searchOrCancel()
+@@ -92,111 +102,165 @@ public class ServerFinderScreen extends Screen
+ 		if(state.isRunning())
+ 		{
+ 			state = ServerFinderState.CANCELLED;
+-			ipBox.active = true;
+-			maxThreadsBox.active = true;
+-			searchButton.setMessage(Text.literal("Search"));
++			enableInputs(true);
++			searchButton.setMessage(Text.literal("Find Servers"));
+ 			return;
+ 		}
+ 		
+-		state = ServerFinderState.RESOLVING;
+-		maxThreads = Integer.parseInt(maxThreadsBox.getText());
+-		ipBox.active = false;
+-		maxThreadsBox.active = false;
++		state = ServerFinderState.SEARCHING;
++		enableInputs(false);
+ 		searchButton.setMessage(Text.literal("Cancel"));
+-		checked = 0;
+-		working = 0;
++		serversFound = 0;
++		lastError = null;
+ 		
+-		new Thread(this::findServers, "Server Finder").start();
++		// Create request asynchronously
++		CompletableFuture.supplyAsync(this::createSearchRequest)
++			.thenCompose(this::executeSearch)
++			.thenAccept(this::handleSearchResults)
++			.exceptionally(this::handleSearchError);
+ 	}
+ 	
+-	private void findServers()
++	private void enableInputs(boolean enabled)
+ 	{
+-		try
++		motdBox.active = enabled;
++		minPlayersBox.active = enabled;
++		maxPlayersBox.active = enabled;
++		crackedBox.active = enabled;
++	}
++	
++	private ServersRequest createSearchRequest()
++	{
++		ServersRequest request =
++			new ServersRequest(ServerSeekerHttp.getApiKey());
++		
++		// Set MOTD filter if provided
++		String motd = motdBox.getText().trim();
++		if(!motd.isEmpty())
++			request.setDescription(motd);
++		
++		// Set player count filters if provided
++		String minStr = minPlayersBox.getText().trim();
++		String maxStr = maxPlayersBox.getText().trim();
++		
++		if(!minStr.isEmpty() || !maxStr.isEmpty())
+ 		{
+-			InetAddress addr =
+-				InetAddress.getByName(ipBox.getText().split(":")[0].trim());
++			Integer min = minStr.isEmpty() ? 0 : parseInteger(minStr);
++			Integer max = maxStr.isEmpty() ? -1 : parseInteger(maxStr);
++			
++			if(min != null && max != null)
++				request.setOnlinePlayers(min, max);
++		}
++		
++		// Set cracked filter
++		if(crackedBox.isChecked())
++			request.setCracked(true);
++		
++		// Set protocol version for current MC version
++		request.setProtocolVersion(
++			SharedConstants.getGameVersion().protocolVersion());
++		
++		return request;
++	}
++	
++	private CompletableFuture<ServersResponse> executeSearch(
++		ServersRequest request)
++	{
++		return CompletableFuture.supplyAsync(() -> {
++			try
++			{
++				return ServerSeekerHttp.postJson("/servers", request,
++					ServersResponse.class);
++			}catch(IOException e)
++			{
++				throw new RuntimeException(e);
++			}
++		});
++	}
++	
++	private void handleSearchResults(ServersResponse response)
++	{
++		client.execute(() -> {
++			if(state == ServerFinderState.CANCELLED)
++				return;
+ 			
+-			int[] ipParts = new int[4];
+-			for(int i = 0; i < 4; i++)
+-				ipParts[i] = addr.getAddress()[i] & 0xff;
++			if(response.isError())
++			{
++				state = ServerFinderState.ERROR;
++				lastError = response.getError();
++				enableInputs(true);
++				searchButton.setMessage(Text.literal("Find Servers"));
++				return;
++			}
+ 			
+-			state = ServerFinderState.SEARCHING;
+-			ArrayList<WurstServerPinger> pingers = new ArrayList<>();
+-			int[] changes = {0, 1, -1, 2, -2, 3, -3};
+-			for(int change : changes)
+-				for(int i2 = 0; i2 <= 255; i2++)
++			List<ServersResponse.ServerEntry> servers = response.getData();
++			if(servers != null)
++			{
++				for(ServersResponse.ServerEntry server : servers)
+ 				{
+ 					if(state == ServerFinderState.CANCELLED)
+-						return;
+-					
+-					int[] ipParts2 = ipParts.clone();
+-					ipParts2[2] = ipParts[2] + change & 0xff;
+-					ipParts2[3] = i2;
+-					String ip = ipParts2[0] + "." + ipParts2[1] + "."
+-						+ ipParts2[2] + "." + ipParts2[3];
++						break;
+ 					
+-					WurstServerPinger pinger = new WurstServerPinger();
+-					pinger.ping(ip);
+-					pingers.add(pinger);
+-					while(pingers.size() >= maxThreads)
+-					{
+-						if(state == ServerFinderState.CANCELLED)
+-							return;
+-						
+-						updatePingers(pingers);
+-					}
++					addServerToList(server);
++					serversFound++;
+ 				}
+-			while(pingers.size() > 0)
+-			{
+-				if(state == ServerFinderState.CANCELLED)
+-					return;
+-				
+-				updatePingers(pingers);
+ 			}
+-			state = ServerFinderState.DONE;
+ 			
+-		}catch(UnknownHostException e)
+-		{
+-			state = ServerFinderState.UNKNOWN_HOST;
++			state = ServerFinderState.DONE;
++			enableInputs(true);
++			searchButton.setMessage(Text.literal("Find Servers"));
++		});
++	}
++	
++	private Void handleSearchError(Throwable throwable)
++	{
++		client.execute(() -> {
++			if(state == ServerFinderState.CANCELLED)
++				return;
+ 			
+-		}catch(Exception e)
+-		{
+-			e.printStackTrace();
+ 			state = ServerFinderState.ERROR;
+-		}
++			lastError = throwable.getMessage();
++			if(lastError == null || lastError.isEmpty())
++				lastError = "Network error occurred";
++			
++			enableInputs(true);
++			searchButton.setMessage(Text.literal("Find Servers"));
++		});
++		return null;
+ 	}
+ 	
+-	private void updatePingers(ArrayList<WurstServerPinger> pingers)
++	private Integer parseInteger(String str)
+ 	{
+-		for(int i = 0; i < pingers.size(); i++)
++		try
+ 		{
+-			WurstServerPinger pinger = pingers.get(i);
+-			if(pinger.isStillPinging())
+-				continue;
+-			
+-			checked++;
+-			if(pinger.isWorking())
+-			{
+-				working++;
+-				String name = "Grief me #" + working;
+-				String ip = pinger.getServerIP();
+-				addServerToList(name, ip);
+-			}
+-			
+-			pingers.remove(i);
+-			i--;
++			return Integer.parseInt(str);
++		}catch(NumberFormatException e)
++		{
++			return null;
+ 		}
+ 	}
+ 	
+ 	// Basically what MultiplayerScreen.addEntry() does,
+ 	// but without changing the current screen.
+-	private void addServerToList(String name, String ip)
++	private void addServerToList(ServersResponse.ServerEntry server)
+ 	{
+ 		ServerList serverList = prevScreen.getServerList();
+-		if(serverList.get(ip) != null)
++		String address = server.getAddress();
++		
++		if(serverList.get(address) != null)
+ 			return;
+ 		
+-		serverList.add(new ServerInfo(name, ip, ServerType.OTHER), false);
++		// Create a descriptive name for the server
++		String name = "ServerSeeker #" + (serversFound + 1);
++		if(server.getDescription() != null
++			&& !server.getDescription().trim().isEmpty())
++		{
++			String desc = server.getDescription().replaceAll("§.", "").trim();
++			if(desc.length() > 30)
++				desc = desc.substring(0, 30) + "...";
++			name += " - " + desc;
++		}
++		
++		serverList.add(new ServerInfo(name, address, ServerType.OTHER), false);
+ 		serverList.saveFile();
+ 		
+ 		MultiplayerServerListWidget selector =
+@@ -208,8 +272,13 @@ public class ServerFinderScreen extends Screen
+ 	@Override
+ 	public void tick()
+ 	{
+-		searchButton.active = MathUtils.isInteger(maxThreadsBox.getText())
+-			&& !ipBox.getText().isEmpty();
++		// Enable search button if at least one search parameter is provided
++		boolean hasSearchCriteria = !motdBox.getText().trim().isEmpty()
++			|| !minPlayersBox.getText().trim().isEmpty()
++			|| !maxPlayersBox.getText().trim().isEmpty()
++			|| crackedBox.isChecked();
++		
++		searchButton.active = hasSearchCriteria || !state.isRunning();
+ 	}
+ 	
+ 	@Override
+@@ -237,34 +306,36 @@ public class ServerFinderScreen extends Screen
+ 	public void render(DrawContext context, int mouseX, int mouseY,
+ 		float partialTicks)
+ 	{
+-		context.drawCenteredTextWithShadow(textRenderer, "Server Finder",
++		context.drawCenteredTextWithShadow(textRenderer, "ServerSeeker",
+ 			width / 2, 20, Colors.WHITE);
+ 		context.drawCenteredTextWithShadow(textRenderer,
+-			"This will search for servers with similar IPs", width / 2, 40,
++			"Search through millions of Minecraft servers", width / 2, 40,
+ 			Colors.LIGHT_GRAY);
+ 		context.drawCenteredTextWithShadow(textRenderer,
+-			"to the IP you type into the field below.", width / 2, 50,
++			"Found servers will be added to your server list", width / 2, 50,
+ 			Colors.LIGHT_GRAY);
+-		context.drawCenteredTextWithShadow(textRenderer,
+-			"The servers it finds will be added to your server list.",
+-			width / 2, 60, Colors.LIGHT_GRAY);
+ 		
+-		context.drawTextWithShadow(textRenderer, "Server address:",
++		context.drawTextWithShadow(textRenderer, "Server description/MOTD:",
+ 			width / 2 - 100, height / 4 + 24, Colors.LIGHT_GRAY);
+-		ipBox.render(context, mouseX, mouseY, partialTicks);
++		motdBox.render(context, mouseX, mouseY, partialTicks);
+ 		
+-		context.drawTextWithShadow(textRenderer, "Max. threads:",
+-			width / 2 - 100, height / 4 + 60, Colors.LIGHT_GRAY);
+-		maxThreadsBox.render(context, mouseX, mouseY, partialTicks);
++		context.drawTextWithShadow(textRenderer, "Online players:",
++			width / 2 - 150, height / 4 + 58, Colors.LIGHT_GRAY);
++		minPlayersBox.render(context, mouseX, mouseY, partialTicks);
++		context.drawTextWithShadow(textRenderer, "to", width / 2 - 10,
++			height / 4 + 73, Colors.LIGHT_GRAY);
++		maxPlayersBox.render(context, mouseX, mouseY, partialTicks);
+ 		
+ 		context.drawCenteredTextWithShadow(textRenderer, state.toString(),
+-			width / 2, height / 4 + 73, Colors.LIGHT_GRAY);
++			width / 2, height / 4 + 100, Colors.LIGHT_GRAY);
+ 		
+-		context.drawTextWithShadow(textRenderer,
+-			"Checked: " + checked + " / 1792", width / 2 - 100, height / 4 + 84,
+-			Colors.LIGHT_GRAY);
+-		context.drawTextWithShadow(textRenderer, "Working: " + working,
+-			width / 2 - 100, height / 4 + 94, Colors.LIGHT_GRAY);
++		if(state == ServerFinderState.DONE)
++			context.drawCenteredTextWithShadow(textRenderer,
++				"Found " + serversFound + " servers", width / 2,
++				height / 4 + 110, Colors.LIGHT_GRAY);
++		else if(state == ServerFinderState.ERROR && lastError != null)
++			context.drawCenteredTextWithShadow(textRenderer,
++				"Error: " + lastError, width / 2, height / 4 + 110, Colors.RED);
+ 		
+ 		for(Drawable drawable : drawables)
+ 			drawable.render(context, mouseX, mouseY, partialTicks);
+@@ -281,11 +352,9 @@ public class ServerFinderScreen extends Screen
+ 	{
+ 		NOT_RUNNING(""),
+ 		SEARCHING("\u00a72Searching..."),
+-		RESOLVING("\u00a72Resolving..."),
+-		UNKNOWN_HOST("\u00a74Unknown Host!"),
+ 		CANCELLED("\u00a74Cancelled!"),
+-		DONE("\u00a72Done!"),
+-		ERROR("\u00a74An error occurred!");
++		DONE("\u00a72Search completed!"),
++		ERROR("\u00a74Search failed!");
+ 		
+ 		private final String name;
+ 		
+@@ -296,7 +365,7 @@ public class ServerFinderScreen extends Screen
+ 		
+ 		public boolean isRunning()
+ 		{
+-			return this == SEARCHING || this == RESOLVING;
++			return this == SEARCHING;
+ 		}
+ 		
+ 		@Override

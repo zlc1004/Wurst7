@@ -1,0 +1,28 @@
+diff --git a/src/main/java/net/wurstclient/hacks/SilentDisconnectHack.java b/src/main/java/net/wurstclient/hacks/SilentDisconnectHack.java
+new file mode 100644
+index 00000000..7291543e
+--- /dev/null
++++ b/src/main/java/net/wurstclient/hacks/SilentDisconnectHack.java
+@@ -0,0 +1,22 @@
++/*
++ * Copyright (c) 2014-2025 Wurst-Imperium and contributors.
++ *
++ * This source code is subject to the terms of the GNU General Public
++ * License, version 3. If a copy of the GPL was not distributed with this
++ * file, You can obtain one at: https://www.gnu.org/licenses/gpl-3.0.txt
++ */
++package net.wurstclient.hacks;
++
++import net.wurstclient.Category;
++import net.wurstclient.SearchTags;
++import net.wurstclient.hack.Hack;
++
++@SearchTags({"silent disconnect", "no disconnect screen", "stay in world"})
++public final class SilentDisconnectHack extends Hack
++{
++	public SilentDisconnectHack()
++	{
++		super("SilentDisconnect");
++		setCategory(Category.OTHER);
++	}
++}
