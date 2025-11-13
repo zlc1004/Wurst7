@@ -41,10 +41,13 @@ public final class HackList implements UpdateListener
 	public final AntiSpamHack antiSpamHack = new AntiSpamHack();
 	public final AntiWaterPushHack antiWaterPushHack = new AntiWaterPushHack();
 	public final AntiWobbleHack antiWobbleHack = new AntiWobbleHack();
+	public final AntiVanishHack antiVanishHack = new AntiVanishHack();
 	public final ArrowDmgHack arrowDmgHack = new ArrowDmgHack();
+	public final AttrSwapHack attrSwapHack = new AttrSwapHack();
 	public final AutoArmorHack autoArmorHack = new AutoArmorHack();
 	public final AutoBuildHack autoBuildHack = new AutoBuildHack();
 	public final AutoCompleteHack autoCompleteHack = new AutoCompleteHack();
+	public final AutoCraftHack autoCraftHack = new AutoCraftHack();
 	public final AutoDropHack autoDropHack = new AutoDropHack();
 	public final AutoLeaveHack autoLeaveHack = new AutoLeaveHack();
 	public final AutoLibrarianHack autoLibrarianHack = new AutoLibrarianHack();
@@ -56,6 +59,7 @@ public final class HackList implements UpdateListener
 	public final AutoReconnectHack autoReconnectHack = new AutoReconnectHack();
 	public final AutoRespawnHack autoRespawnHack = new AutoRespawnHack();
 	public final AutoSignHack autoSignHack = new AutoSignHack();
+	public final AutoSellHack autoSellHack = new AutoSellHack();
 	public final AutoSoupHack autoSoupHack = new AutoSoupHack();
 	public final AutoSprintHack autoSprintHack = new AutoSprintHack();
 	public final AutoStealHack autoStealHack = new AutoStealHack();
@@ -67,8 +71,13 @@ public final class HackList implements UpdateListener
 	public final AutoWalkHack autoWalkHack = new AutoWalkHack();
 	public final BarrierEspHack barrierEspHack = new BarrierEspHack();
 	public final BaseFinderHack baseFinderHack = new BaseFinderHack();
+	public final BedFinderHack bedFinderHack = new BedFinderHack();
 	public final BlinkHack blinkHack = new BlinkHack();
 	public final BoatFlyHack boatFlyHack = new BoatFlyHack();
+	public final BoatGlitchHack boatGlitchHack = new BoatGlitchHack();
+	public final BoatPhaseHack boatPhaseHack = new BoatPhaseHack();
+	public final BookDupeHack bookDupeHack = new BookDupeHack();
+	public final BookKickHack bookKickHack = new BookKickHack();
 	public final BonemealAuraHack bonemealAuraHack = new BonemealAuraHack();
 	public final BowAimbotHack bowAimbotHack = new BowAimbotHack();
 	public final BuildRandomHack buildRandomHack = new BuildRandomHack();
@@ -80,8 +89,10 @@ public final class HackList implements UpdateListener
 	public final ChatTranslatorHack chatTranslatorHack =
 		new ChatTranslatorHack();
 	public final ChestEspHack chestEspHack = new ChestEspHack();
+	public final ChorusExploitHack chorusExploitHack = new ChorusExploitHack();
 	public final ClickAuraHack clickAuraHack = new ClickAuraHack();
 	public final ClickGuiHack clickGuiHack = new ClickGuiHack();
+	public final ConfuseHack confuseHack = new ConfuseHack();
 	public final CrashChestHack crashChestHack = new CrashChestHack();
 	public final CreativeFlightHack creativeFlightHack =
 		new CreativeFlightHack();
@@ -150,6 +161,7 @@ public final class HackList implements UpdateListener
 	public final NukerHack nukerHack = new NukerHack();
 	public final NukerLegitHack nukerLegitHack = new NukerLegitHack();
 	public final OpenWaterEspHack openWaterEspHack = new OpenWaterEspHack();
+	public final OpSignHack opSignHack = new OpSignHack();
 	public final OverlayHack overlayHack = new OverlayHack();
 	public final PanicHack panicHack = new PanicHack();
 	public final ParkourHack parkourHack = new ParkourHack();
@@ -187,92 +199,93 @@ public final class HackList implements UpdateListener
 	public final TrollPotionHack trollPotionHack = new TrollPotionHack();
 	public final TrueSightHack trueSightHack = new TrueSightHack();
 	public final TunnellerHack tunnellerHack = new TunnellerHack();
+	public final VehicleOneHitHack vehicleOneHitHack = new VehicleOneHitHack();
 	public final VeinMinerHack veinMinerHack = new VeinMinerHack();
 	public final XRayHack xRayHack = new XRayHack();
-	
+
 	private final TreeMap<String, Hack> hax =
 		new TreeMap<>(String::compareToIgnoreCase);
-	
+
 	private final EnabledHacksFile enabledHacksFile;
 	private final Path profilesFolder =
 		WurstClient.INSTANCE.getWurstFolder().resolve("enabled hacks");
-	
+
 	private final EventManager eventManager =
 		WurstClient.INSTANCE.getEventManager();
-	
+
 	public HackList(Path enabledHacksFile)
 	{
 		this.enabledHacksFile = new EnabledHacksFile(enabledHacksFile);
-		
+
 		try
 		{
 			for(Field field : HackList.class.getDeclaredFields())
 			{
 				if(!field.getName().endsWith("Hack"))
 					continue;
-				
+
 				Hack hack = (Hack)field.get(this);
 				hax.put(hack.getName(), hack);
 			}
-			
+
 		}catch(Exception e)
 		{
 			String message = "Initializing Wurst hacks";
 			CrashReport report = CrashReport.create(e, message);
 			throw new CrashException(report);
 		}
-		
+
 		eventManager.add(UpdateListener.class, this);
 	}
-	
+
 	@Override
 	public void onUpdate()
 	{
 		enabledHacksFile.load(this);
 		eventManager.remove(UpdateListener.class, this);
 	}
-	
+
 	public void saveEnabledHax()
 	{
 		enabledHacksFile.save(this);
 	}
-	
+
 	public Hack getHackByName(String name)
 	{
 		return hax.get(name);
 	}
-	
+
 	public Collection<Hack> getAllHax()
 	{
 		return Collections.unmodifiableCollection(hax.values());
 	}
-	
+
 	public int countHax()
 	{
 		return hax.size();
 	}
-	
+
 	public ArrayList<Path> listProfiles()
 	{
 		if(!Files.isDirectory(profilesFolder))
 			return new ArrayList<>();
-		
+
 		try(Stream<Path> files = Files.list(profilesFolder))
 		{
 			return files.filter(Files::isRegularFile)
 				.collect(Collectors.toCollection(ArrayList::new));
-			
+
 		}catch(IOException e)
 		{
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public void loadProfile(String fileName) throws IOException, JsonException
 	{
 		enabledHacksFile.loadProfile(this, profilesFolder.resolve(fileName));
 	}
-	
+
 	public void saveProfile(String fileName) throws IOException, JsonException
 	{
 		enabledHacksFile.saveProfile(this, profilesFolder.resolve(fileName));
