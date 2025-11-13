@@ -1,0 +1,89 @@
+/*
+ * Copyright (c) 2014-2025 Wurst-Imperium and contributors.
+ *
+ * This source code is subject to the terms of the GNU General Public
+ * License, version 3. If a copy of the GPL was not distributed with this
+ * file, You can obtain one at: https://www.gnu.org/licenses/gpl-3.0.txt
+ */
+package net.wurstclient.serverfinder.api;
+
+import java.util.List;
+
+public class ServerInfoResponse
+{
+	private String error;
+	private boolean cracked;
+	private String description;
+	private int onlinePlayers;
+	private int maxPlayers;
+	private int protocol;
+	private long lastSeen;
+	private String version;
+	private List<Player> players;
+	
+	public boolean isError()
+	{
+		return error != null;
+	}
+	
+	public String getError()
+	{
+		return error;
+	}
+	
+	public boolean isCracked()
+	{
+		return cracked;
+	}
+	
+	public String getDescription()
+	{
+		return description;
+	}
+	
+	public int getOnlinePlayers()
+	{
+		return onlinePlayers;
+	}
+	
+	public int getMaxPlayers()
+	{
+		return maxPlayers;
+	}
+	
+	public int getProtocol()
+	{
+		return protocol;
+	}
+	
+	public long getLastSeen()
+	{
+		return lastSeen;
+	}
+	
+	public String getVersion()
+	{
+		return version;
+	}
+	
+	public List<Player> getPlayers()
+	{
+		return players != null ? players : List.of();
+	}
+	
+	public static class Player
+	{
+		private String name;
+		private long lastSeen;
+		
+		public String getName()
+		{
+			return name;
+		}
+		
+		public long getLastSeen()
+		{
+			return lastSeen;
+		}
+	}
+}
