@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "id": "wurst",
+  "id": "appleskin",
   "version": "${version}",
-  "name": "Lucas HAck KoboSh JOeI",
-  "description": "KOBOSH JOEI TRUTH ON TOP",
+  "name": "AppleSkin",
+  "description": "Adds various food-related HUD improvements. ts is fake nga it is definitely not a wurst client mod.",
   "authors": [
     "Alexander01998",
     "@notlucasz228"
   ],
   "contact": {
-    "homepage": "https://www.wurstclient.net/modmenu-homepage/",
-    "sources": "https://www.wurstclient.net/modmenu-sources/",
-    "issues": "https://www.wurstclient.net/modmenu-issues/"
+    "sources": "https://github.com/squeek502/AppleSkin",
+    "homepage": "https://minecraft.curseforge.com/projects/appleskin",
+    "issues": "https://github.com/squeek502/AppleSkin/issues"
   },
   "license": "GPL-3.0-or-later",
-  "icon": "assets/wurst/icon.png",
+  "icon": "assets/appleskin/appleskin.png",
   "environment": "client",
   "entrypoints": {
     "main": [
