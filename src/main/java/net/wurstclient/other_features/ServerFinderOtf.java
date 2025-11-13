@@ -11,13 +11,13 @@ import net.wurstclient.DontBlock;
 import net.wurstclient.SearchTags;
 import net.wurstclient.other_feature.OtherFeature;
 
-@SearchTags({"Server Finder"})
+@SearchTags({"Server Seeker", "Server Finder", "Find Servers", "Find Players"})
 @DontBlock
 public final class ServerFinderOtf extends OtherFeature
 {
 	public ServerFinderOtf()
 	{
-		super("ServerFinder",
-			"Allows you to find easy-to-grief Minecraft servers quickly and easily. To use it, press the 'Server Finder' button on the server selection screen.");
+		super("ServerSeeker",
+			"Advanced server discovery using the ServerSeeker API. Search through millions of servers by MOTD, player count, or find specific players. Use the 'ServerSeeker' and 'Find Players' buttons on the server selection screen.");
 	}
 }
