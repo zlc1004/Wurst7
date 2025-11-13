@@ -21,16 +21,16 @@ public final class WurstLogo
 	private static final WurstClient WURST = WurstClient.INSTANCE;
 	private static final Identifier LOGO_TEXTURE =
 		Identifier.of("wurst", "wurst_128.png");
-	
+
 	public void render(DrawContext context)
 	{
 		WurstLogoOtf otf = WURST.getOtfs().wurstLogoOtf;
 		if(!otf.isVisible())
 			return;
-		
+
 		String version = getVersionString();
 		TextRenderer tr = WurstClient.MC.textRenderer;
-		
+
 		// background
 		int bgColor;
 		if(WURST.getHax().rainbowUiHack.isEnabled())
@@ -38,23 +38,25 @@ public final class WurstLogo
 		else
 			bgColor = otf.getBackgroundColor();
 		context.fill(0, 6, tr.getWidth(version) + 76, 17, bgColor);
-		
+
 		// version string
 		context.drawText(tr, version, 74, 8, otf.getTextColor(), false);
-		
+
 		// Wurst logo
 		RenderSystem.enableBlend();
 		context.drawTexture(LOGO_TEXTURE, 0, 3, 0, 0, 72, 18, 72, 18);
 	}
-	
+
 	private String getVersionString()
 	{
-		String version = "v" + WurstClient.VERSION;
+		String version = "Kobosh joei client";
 		version += " MC" + WurstClient.MC_VERSION;
-		
+
 		if(WURST.getUpdater().isOutdated())
-			version += " (outdated)";
-		
+			version += "";
+
+		// version += " built with kobosh joei";
+
 		return version;
 	}
 }
