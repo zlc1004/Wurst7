@@ -20,10 +20,12 @@ public final class CmdList
 	public final AddAltCmd addAltCmd = new AddAltCmd();
 	public final AnnoyCmd annoyCmd = new AnnoyCmd();
 	public final AuthorCmd authorCmd = new AuthorCmd();
+	public final AutoCraftCmd autoCraftCmd = new AutoCraftCmd();
 	public final BindCmd bindCmd = new BindCmd();
 	public final BindsCmd bindsCmd = new BindsCmd();
 	public final BlinkCmd blinkCmd = new BlinkCmd();
 	public final BlockListCmd blockListCmd = new BlockListCmd();
+	public final ChorusExploitCmd chorusExploitCmd = new ChorusExploitCmd();
 	public final ClearCmd clearCmd = new ClearCmd();
 	public final CopyItemCmd copyitemCmd = new CopyItemCmd();
 	public final DamageCmd damageCmd = new DamageCmd();
@@ -54,6 +56,7 @@ public final class CmdList
 	public final RvCmd rvCmd = new RvCmd();
 	public final SvCmd svCmd = new SvCmd();
 	public final SayCmd sayCmd = new SayCmd();
+	public final SeedCmd seedCmd = new SeedCmd();
 	public final SetBlockCmd setBlockCmd = new SetBlockCmd();
 	public final SetCheckboxCmd setCheckboxCmd = new SetCheckboxCmd();
 	public final SetColorCmd setColorCmd = new SetColorCmd();
@@ -69,10 +72,10 @@ public final class CmdList
 	public final ViewCompCmd viewCompCmd = new ViewCompCmd();
 	public final ViewNbtCmd viewNbtCmd = new ViewNbtCmd();
 	public final XrayCmd xrayCmd = new XrayCmd();
-	
+
 	private final TreeMap<String, Command> cmds =
 		new TreeMap<>(String::compareToIgnoreCase);
-	
+
 	public CmdList()
 	{
 		try
@@ -81,11 +84,11 @@ public final class CmdList
 			{
 				if(!field.getName().endsWith("Cmd"))
 					continue;
-				
+
 				Command cmd = (Command)field.get(this);
 				cmds.put(cmd.getName(), cmd);
 			}
-			
+
 		}catch(Exception e)
 		{
 			String message = "Initializing Wurst commands";
@@ -93,17 +96,17 @@ public final class CmdList
 			throw new CrashException(report);
 		}
 	}
-	
+
 	public Command getCmdByName(String name)
 	{
 		return cmds.get("." + name);
 	}
-	
+
 	public Collection<Command> getAllCmds()
 	{
 		return cmds.values();
 	}
-	
+
 	public int countCmds()
 	{
 		return cmds.size();
