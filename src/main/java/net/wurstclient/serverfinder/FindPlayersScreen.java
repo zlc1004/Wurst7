@@ -13,15 +13,12 @@ import java.util.concurrent.CompletableFuture;
 
 import org.lwjgl.glfw.GLFW;
 
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.network.ServerInfo.ServerType;
 import net.minecraft.client.option.ServerList;
@@ -51,7 +48,7 @@ public class FindPlayersScreen extends Screen
 	}
 	
 	@Override
-	public void init()
+	protected void init()
 	{
 		addDrawableChild(searchButton = ButtonWidget
 			.builder(Text.literal("Find Player"), b -> searchOrCancel())
@@ -75,7 +72,7 @@ public class FindPlayersScreen extends Screen
 		playerNameBox.setMaxLength(16);
 		playerNameBox.setPlaceholder(Text.literal("Enter player name"));
 		addSelectableChild(playerNameBox);
-		setFocused(playerNameBox);
+		setInitialFocus(playerNameBox);
 		
 		state = FindPlayerState.NOT_RUNNING;
 		serversFound = 0;
@@ -230,103 +227,80 @@ public class FindPlayersScreen extends Screen
 	}
 	
 	@Override
-	public boolean keyPressed(KeyInput context)
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
 	{
-		if(context.key() == GLFW.GLFW_KEY_ENTER && searchButton.active)
-			searchButton.onPress(context);
-		
-		return super.keyPressed(context);
-	}
-	
-	@Override
-	public boolean mouseClicked(Click context, boolean doubleClick)
-	{
-		if(context.button() == GLFW.GLFW_MOUSE_BUTTON_4)
+		if(keyCode == GLFW.GLFW_KEY_ENTER && searchButton.active)
 		{
-			close();
+			searchButton.onPress();
 			return true;
 		}
 		
-		return super.mouseClicked(context, doubleClick);
+		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 	
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY,
-		float partialTicks)
+	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
-		context.drawCenteredTextWithShadow(textRenderer, "Find Players",
-			width / 2, 20, Colors.WHITE);
-		context.drawCenteredTextWithShadow(textRenderer,
-			"Search for servers where a specific player has been seen",
-			width / 2, 40, Colors.LIGHT_GRAY);
-		context.drawCenteredTextWithShadow(textRenderer,
-			"Found servers will be added to your server list", width / 2, 50,
-			Colors.LIGHT_GRAY);
+		super.render(context, mouseX, mouseY, delta);
 		
-		context.drawTextWithShadow(textRenderer, "Player name:",
-			width / 2 - 100, height / 4 + 24, Colors.LIGHT_GRAY);
-		playerNameBox.render(context, mouseX, mouseY, partialTicks);
+		// Draw title
+		context.drawCenteredTextWithShadow(textRenderer, title, width / 2,
+			height / 4 - 40, Colors.WHITE);
 		
-		context.drawCenteredTextWithShadow(textRenderer, state.toString(),
-			width / 2, height / 4 + 63, Colors.LIGHT_GRAY);
+		// Draw input label
+		context.drawTextWithShadow(textRenderer, "Player Name:",
+			width / 2 - 100, height / 4 + 24, Colors.WHITE);
 		
-		if(state == FindPlayerState.DONE)
+		// Draw text field
+		playerNameBox.render(context, mouseX, mouseY, delta);
+		
+		// Draw status
+		String status = getStatusText();
+		if(status != null)
 		{
-			if(serversFound > 0)
-			{
-				context.drawCenteredTextWithShadow(textRenderer,
-					"Found " + serversFound + " servers", width / 2,
-					height / 4 + 73, Colors.LIGHT_GRAY);
-				context.drawCenteredTextWithShadow(textRenderer,
-					"Click 'Get Players' to see detailed player information",
-					width / 2, height / 4 + 83, Colors.LIGHT_GRAY);
-			}else
-			{
-				context.drawCenteredTextWithShadow(textRenderer,
-					"No servers found for this player", width / 2,
-					height / 4 + 73, Colors.YELLOW);
-			}
-		}else if(state == FindPlayerState.ERROR && lastError != null)
-		{
-			context.drawCenteredTextWithShadow(textRenderer,
-				"Error: " + lastError, width / 2, height / 4 + 73, Colors.RED);
+			int color = state == FindPlayerState.ERROR ? Colors.RED : Colors.WHITE;
+			context.drawCenteredTextWithShadow(textRenderer, status,
+				width / 2, height / 4 + 64, color);
 		}
-		
-		for(Drawable drawable : drawables)
-			drawable.render(context, mouseX, mouseY, partialTicks);
+	}
+	
+	private String getStatusText()
+	{
+		switch(state)
+		{
+			case SEARCHING:
+				return "Searching...";
+			
+			case DONE:
+				return serversFound > 0 ? "Found " + serversFound + " servers"
+					: "No servers found";
+			
+			case ERROR:
+				return lastError != null ? "Error: " + lastError
+					: "An error occurred";
+			
+			default:
+				return null;
+		}
 	}
 	
 	@Override
 	public void close()
 	{
-		state = FindPlayerState.CANCELLED;
 		client.setScreen(prevScreen);
 	}
 	
-	enum FindPlayerState
+	private enum FindPlayerState
 	{
-		NOT_RUNNING(""),
-		SEARCHING("\u00a72Searching..."),
-		CANCELLED("\u00a74Cancelled!"),
-		DONE("\u00a72Search completed!"),
-		ERROR("\u00a74Search failed!");
-		
-		private final String name;
-		
-		private FindPlayerState(String name)
-		{
-			this.name = name;
-		}
+		NOT_RUNNING,
+		SEARCHING,
+		DONE,
+		CANCELLED,
+		ERROR;
 		
 		public boolean isRunning()
 		{
 			return this == SEARCHING;
-		}
-		
-		@Override
-		public String toString()
-		{
-			return name;
 		}
 	}
 }
