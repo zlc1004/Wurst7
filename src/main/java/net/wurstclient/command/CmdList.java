@@ -72,10 +72,10 @@ public final class CmdList
 	public final ViewCompCmd viewCompCmd = new ViewCompCmd();
 	public final ViewNbtCmd viewNbtCmd = new ViewNbtCmd();
 	public final XrayCmd xrayCmd = new XrayCmd();
-
+	
 	private final TreeMap<String, Command> cmds =
 		new TreeMap<>(String::compareToIgnoreCase);
-
+	
 	public CmdList()
 	{
 		try
@@ -84,11 +84,11 @@ public final class CmdList
 			{
 				if(!field.getName().endsWith("Cmd"))
 					continue;
-
+				
 				Command cmd = (Command)field.get(this);
 				cmds.put(cmd.getName(), cmd);
 			}
-
+			
 		}catch(Exception e)
 		{
 			String message = "Initializing Wurst commands";
@@ -96,17 +96,17 @@ public final class CmdList
 			throw new CrashException(report);
 		}
 	}
-
+	
 	public Command getCmdByName(String name)
 	{
 		return cmds.get("." + name);
 	}
-
+	
 	public Collection<Command> getAllCmds()
 	{
 		return cmds.values();
 	}
-
+	
 	public int countCmds()
 	{
 		return cmds.size();

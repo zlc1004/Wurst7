@@ -115,6 +115,8 @@ public final class HackList implements UpdateListener
 	public final FreecamHack freecamHack = new FreecamHack();
 	public final FullbrightHack fullbrightHack = new FullbrightHack();
 	public final GlideHack glideHack = new GlideHack();
+	public final GamemodeNotifierHack gamemodeNotifierHack =
+		new GamemodeNotifierHack();
 	public final HandNoClipHack handNoClipHack = new HandNoClipHack();
 	public final HeadRollHack headRollHack = new HeadRollHack();
 	public final HealthTagsHack healthTagsHack = new HealthTagsHack();
@@ -125,12 +127,14 @@ public final class HackList implements UpdateListener
 	public final InvWalkHack invWalkHack = new InvWalkHack();
 	public final ItemEspHack itemEspHack = new ItemEspHack();
 	public final ItemGeneratorHack itemGeneratorHack = new ItemGeneratorHack();
+	public final ItemTpHack itemTpHack = new ItemTpHack();
 	public final JesusHack jesusHack = new JesusHack();
 	public final JetpackHack jetpackHack = new JetpackHack();
 	public final KaboomHack kaboomHack = new KaboomHack();
 	public final KillauraLegitHack killauraLegitHack = new KillauraLegitHack();
 	public final KillauraHack killauraHack = new KillauraHack();
 	public final KillPotionHack killPotionHack = new KillPotionHack();
+	public final LavacastHack lavacastHack = new LavacastHack();
 	public final LiquidsHack liquidsHack = new LiquidsHack();
 	public final LsdHack lsdHack = new LsdHack();
 	public final MaceDmgHack maceDmgHack = new MaceDmgHack();
@@ -179,6 +183,10 @@ public final class HackList implements UpdateListener
 	public final SafeWalkHack safeWalkHack = new SafeWalkHack();
 	public final ScaffoldWalkHack scaffoldWalkHack = new ScaffoldWalkHack();
 	public final SearchHack searchHack = new SearchHack();
+	public final SeedXRayHack seedXRayHack = new SeedXRayHack();
+	public final SilentDisconnectHack silentDisconnectHack =
+		new SilentDisconnectHack();
+	public final SkeletonEspHack skeletonEspHack = new SkeletonEspHack();
 	public final SkinDerpHack skinDerpHack = new SkinDerpHack();
 	public final SneakHack sneakHack = new SneakHack();
 	public final SnowShoeHack snowShoeHack = new SnowShoeHack();
@@ -202,90 +210,90 @@ public final class HackList implements UpdateListener
 	public final VehicleOneHitHack vehicleOneHitHack = new VehicleOneHitHack();
 	public final VeinMinerHack veinMinerHack = new VeinMinerHack();
 	public final XRayHack xRayHack = new XRayHack();
-
+	
 	private final TreeMap<String, Hack> hax =
 		new TreeMap<>(String::compareToIgnoreCase);
-
+	
 	private final EnabledHacksFile enabledHacksFile;
 	private final Path profilesFolder =
 		WurstClient.INSTANCE.getWurstFolder().resolve("enabled hacks");
-
+	
 	private final EventManager eventManager =
 		WurstClient.INSTANCE.getEventManager();
-
+	
 	public HackList(Path enabledHacksFile)
 	{
 		this.enabledHacksFile = new EnabledHacksFile(enabledHacksFile);
-
+		
 		try
 		{
 			for(Field field : HackList.class.getDeclaredFields())
 			{
 				if(!field.getName().endsWith("Hack"))
 					continue;
-
+				
 				Hack hack = (Hack)field.get(this);
 				hax.put(hack.getName(), hack);
 			}
-
+			
 		}catch(Exception e)
 		{
 			String message = "Initializing Wurst hacks";
 			CrashReport report = CrashReport.create(e, message);
 			throw new CrashException(report);
 		}
-
+		
 		eventManager.add(UpdateListener.class, this);
 	}
-
+	
 	@Override
 	public void onUpdate()
 	{
 		enabledHacksFile.load(this);
 		eventManager.remove(UpdateListener.class, this);
 	}
-
+	
 	public void saveEnabledHax()
 	{
 		enabledHacksFile.save(this);
 	}
-
+	
 	public Hack getHackByName(String name)
 	{
 		return hax.get(name);
 	}
-
+	
 	public Collection<Hack> getAllHax()
 	{
 		return Collections.unmodifiableCollection(hax.values());
 	}
-
+	
 	public int countHax()
 	{
 		return hax.size();
 	}
-
+	
 	public ArrayList<Path> listProfiles()
 	{
 		if(!Files.isDirectory(profilesFolder))
 			return new ArrayList<>();
-
+		
 		try(Stream<Path> files = Files.list(profilesFolder))
 		{
 			return files.filter(Files::isRegularFile)
 				.collect(Collectors.toCollection(ArrayList::new));
-
+			
 		}catch(IOException e)
 		{
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public void loadProfile(String fileName) throws IOException, JsonException
 	{
 		enabledHacksFile.loadProfile(this, profilesFolder.resolve(fileName));
 	}
-
+	
 	public void saveProfile(String fileName) throws IOException, JsonException
 	{
 		enabledHacksFile.saveProfile(this, profilesFolder.resolve(fileName));

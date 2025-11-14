@@ -16,7 +16,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.stream.Collectors;
 
-import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
+import net.minecraft.client.render.VertexFormat;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.render.VertexFormats;
@@ -184,9 +184,7 @@ public final class BedFinderHack extends Hack
 		RenderUtils.applyRegionalRenderOffset(matrixStack, bufferRegion);
 		
 		// Use a different color scheme for beds (red/pink theme)
-		float[] bedColor = {1.0F, 0.4F, 0.4F}; // Light red/pink color
-		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_QUADS, bedColor,
-			0.5F);
+		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_QUADS);
 		
 		matrixStack.pop();
 	}
@@ -242,13 +240,14 @@ public final class BedFinderHack extends Hack
 		if(vertexBuffer != null)
 			vertexBuffer.close();
 		
-		vertexBuffer = EasyVertexBuffer.createAndUpload(DrawMode.QUADS,
-			VertexFormats.POSITION_COLOR, buffer -> {
-				for(int[] vertex : vertices)
-					buffer.vertex(vertex[0] - region.x(), vertex[1],
-						vertex[2] - region.z()).color(0xFFFF6666); // Light
-																	// red/pink
-			});
+		vertexBuffer =
+			EasyVertexBuffer.createAndUpload(VertexFormat.DrawMode.QUADS,
+				VertexFormats.POSITION_COLOR, buffer -> {
+					for(int[] vertex : vertices)
+						buffer.vertex(vertex[0] - region.x(), vertex[1],
+							vertex[2] - region.z()).color(0xFFFF6666); // Light
+																		// red/pink
+				});
 		
 		bufferUpToDate = true;
 		bufferRegion = region;

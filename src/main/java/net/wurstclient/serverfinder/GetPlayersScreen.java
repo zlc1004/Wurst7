@@ -24,7 +24,8 @@ public class GetPlayersScreen extends Screen
 	private int scroll = 0;
 	private static final int SERVERS_PER_PAGE = 12;
 	
-	public GetPlayersScreen(MultiplayerScreen prevScreen, List<WhereisResponse.PlayerServerEntry> servers)
+	public GetPlayersScreen(MultiplayerScreen prevScreen,
+		List<WhereisResponse.PlayerServerEntry> servers)
 	{
 		super(Text.literal("Get Players"));
 		this.prevScreen = prevScreen;
@@ -34,8 +35,9 @@ public class GetPlayersScreen extends Screen
 	@Override
 	protected void init()
 	{
-		addDrawableChild(ButtonWidget.builder(Text.literal("Back"), b -> close())
-			.dimensions(width / 2 - 100, height - 30, 200, 20).build());
+		addDrawableChild(
+			ButtonWidget.builder(Text.literal("Back"), b -> close())
+				.dimensions(width / 2 - 100, height - 30, 200, 20).build());
 	}
 	
 	@Override
@@ -44,33 +46,40 @@ public class GetPlayersScreen extends Screen
 		super.render(context, mouseX, mouseY, delta);
 		
 		// Draw title
-		context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 20, Colors.WHITE);
+		context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 20,
+			Colors.WHITE);
 		
 		// Draw servers list
 		if(servers != null && !servers.isEmpty())
 		{
 			int y = 50;
 			int startIndex = scroll;
-			int endIndex = Math.min(startIndex + SERVERS_PER_PAGE, servers.size());
+			int endIndex =
+				Math.min(startIndex + SERVERS_PER_PAGE, servers.size());
 			
 			for(int i = startIndex; i < endIndex; i++)
 			{
 				WhereisResponse.PlayerServerEntry server = servers.get(i);
-				String text = server.getAddress() + " - " + server.getOnlinePlayers() + "/" + server.getMaxPlayers();
-				context.drawTextWithShadow(textRenderer, text, 20, y, Colors.WHITE);
+				String text = server.getAddress() + " - "
+					+ server.getOnlinePlayers() + "/" + server.getMaxPlayers();
+				context.drawTextWithShadow(textRenderer, text, 20, y,
+					Colors.WHITE);
 				y += 20;
 			}
 			
 			// Draw pagination info
-			int totalPages = (servers.size() + SERVERS_PER_PAGE - 1) / SERVERS_PER_PAGE;
+			int totalPages =
+				(servers.size() + SERVERS_PER_PAGE - 1) / SERVERS_PER_PAGE;
 			int currentPage = scroll / SERVERS_PER_PAGE + 1;
 			String pageInfo = "Page " + currentPage + " / " + totalPages;
-			context.drawCenteredTextWithShadow(textRenderer, pageInfo, width / 2, height - 60, Colors.GRAY);
+			context.drawCenteredTextWithShadow(textRenderer, pageInfo,
+				width / 2, height - 60, Colors.GRAY);
 		}
 	}
 	
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
+	public boolean mouseScrolled(double mouseX, double mouseY,
+		double horizontalAmount, double verticalAmount)
 	{
 		if(servers != null && servers.size() > SERVERS_PER_PAGE)
 		{
@@ -78,7 +87,8 @@ public class GetPlayersScreen extends Screen
 			int maxScroll = Math.max(0, servers.size() - SERVERS_PER_PAGE);
 			scroll = Math.max(0, Math.min(scroll, maxScroll));
 		}
-		return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+		return super.mouseScrolled(mouseX, mouseY, horizontalAmount,
+			verticalAmount);
 	}
 	
 	@Override

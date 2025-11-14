@@ -106,9 +106,9 @@ public final class AntiVanishHack extends Hack
 	private void checkLeaveMessages()
 	{
 		Map<UUID, String> oldPlayers = Map.copyOf(playerCache);
-		playerCache =
-			MC.getNetworkHandler().getPlayerList().stream().collect(Collectors
-				.toMap(e -> e.getProfile().id(), e -> e.getProfile().name()));
+		playerCache = MC.getNetworkHandler().getPlayerList().stream()
+			.collect(Collectors.toMap(e -> e.getProfile().getId(),
+				e -> e.getProfile().getName()));
 		
 		for(UUID uuid : oldPlayers.keySet())
 		{

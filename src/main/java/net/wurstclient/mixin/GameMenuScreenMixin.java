@@ -37,24 +37,24 @@ public abstract class GameMenuScreenMixin extends Screen
 	@Unique
 	private static final Identifier WURST_TEXTURE =
 		Identifier.of("wurst", "wurst_128.png");
-
+	
 	@Unique
 	private ButtonWidget wurstOptionsButton;
-
+	
 	private GameMenuScreenMixin(WurstClient wurst, Text title)
 	{
 		super(title);
 	}
-
+	
 	@Inject(at = @At("TAIL"), method = "initWidgets()V")
 	private void onInitWidgets(CallbackInfo ci)
 	{
 		if(!WurstClient.INSTANCE.isEnabled())
 			return;
-
+		
 		addWurstOptionsButton();
 	}
-
+	
 	@Inject(at = @At("TAIL"),
 		method = "render(Lnet/minecraft/client/gui/DrawContext;IIF)V")
 	private void onRender(DrawContext context, int mouseX, int mouseY,
@@ -62,7 +62,7 @@ public abstract class GameMenuScreenMixin extends Screen
 	{
 		if(!WurstClient.INSTANCE.isEnabled() || wurstOptionsButton == null)
 			return;
-
+		
 		int x = wurstOptionsButton.getX() + 34;
 		int y = wurstOptionsButton.getY() + 2;
 		int w = 63;
@@ -74,18 +74,18 @@ public abstract class GameMenuScreenMixin extends Screen
 		RenderSystem.enableBlend();
 		// context.drawTexture(WURST_TEXTURE, x, y, u, v, w, h, fw, fh);
 	}
-
+	
 	@Unique
 	private void addWurstOptionsButton()
 	{
 		List<ClickableWidget> buttons = Screens.getButtons(this);
-
+		
 		// Fallback position
 		int buttonX = width / 2 - 102;
 		int buttonY = 60;
 		int buttonWidth = 204;
 		int buttonHeight = 20;
-
+		
 		for(ClickableWidget button : buttons)
 		{
 			// If feedback button exists, use its position
@@ -95,7 +95,7 @@ public abstract class GameMenuScreenMixin extends Screen
 				buttonY = button.getY();
 				break;
 			}
-
+			
 			// If options button exists, go 24px above it
 			if(isTrKey(button, "menu.options"))
 			{
@@ -103,11 +103,11 @@ public abstract class GameMenuScreenMixin extends Screen
 				break;
 			}
 		}
-
+		
 		// Clear required space for Wurst Options
 		hideFeedbackReportAndServerLinksButtons();
 		ensureSpaceAvailable(buttonX, buttonY, buttonWidth, buttonHeight);
-
+		
 		// Create Wurst Options button
 		MutableText buttonText = Text.literal("LHackOptions...");
 		wurstOptionsButton = ButtonWidget
@@ -115,7 +115,7 @@ public abstract class GameMenuScreenMixin extends Screen
 			.dimensions(buttonX, buttonY, buttonWidth, buttonHeight).build();
 		buttons.add(wurstOptionsButton);
 	}
-
+	
 	@Unique
 	private void hideFeedbackReportAndServerLinksButtons()
 	{
@@ -126,7 +126,7 @@ public abstract class GameMenuScreenMixin extends Screen
 				|| isTrKey(button, "menu.server_links"))
 				button.visible = false;
 	}
-
+	
 	@Unique
 	private void ensureSpaceAvailable(int x, int y, int width, int height)
 	{
@@ -137,29 +137,29 @@ public abstract class GameMenuScreenMixin extends Screen
 			if(button.getRight() < x || button.getX() > x + width
 				|| button.getBottom() < y || button.getY() > y + height)
 				continue;
-
+			
 			if(!button.visible)
 				continue;
-
+			
 			buttonsInTheWay.add(button);
 		}
-
+		
 		// If not, we're done
 		if(buttonsInTheWay.isEmpty())
 			return;
-
+		
 		// If yes, clear space below and move the buttons there
 		ensureSpaceAvailable(x, y + 24, width, height);
 		for(ClickableWidget button : buttonsInTheWay)
 			button.setY(button.getY() + 24);
 	}
-
+	
 	@Unique
 	private void openWurstOptions()
 	{
 		client.setScreen(new WurstOptionsScreen(this));
 	}
-
+	
 	@Unique
 	private boolean isTrKey(ClickableWidget button, String key)
 	{

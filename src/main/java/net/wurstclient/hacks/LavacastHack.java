@@ -272,10 +272,10 @@ public final class LavacastHack extends Hack
 			return;
 		}
 		
-		int prevSlot = MC.player.getInventory().getSelectedSlot();
-		MC.player.getInventory().setSelectedSlot(slot);
+		int prevSlot = MC.player.getInventory().selectedSlot;
+		MC.player.getInventory().selectedSlot = slot;
 		MC.interactionManager.interactItem(MC.player, Hand.MAIN_HAND);
-		MC.player.getInventory().setSelectedSlot(prevSlot);
+		MC.player.getInventory().selectedSlot = prevSlot;
 	}
 	
 	private void placeWater()
@@ -288,10 +288,10 @@ public final class LavacastHack extends Hack
 			return;
 		}
 		
-		int prevSlot = MC.player.getInventory().getSelectedSlot();
-		MC.player.getInventory().setSelectedSlot(slot);
+		int prevSlot = MC.player.getInventory().selectedSlot;
+		MC.player.getInventory().selectedSlot = slot;
 		MC.interactionManager.interactItem(MC.player, Hand.MAIN_HAND);
-		MC.player.getInventory().setSelectedSlot(prevSlot);
+		MC.player.getInventory().selectedSlot = prevSlot;
 	}
 	
 	private void pickupLiquid()
@@ -304,10 +304,10 @@ public final class LavacastHack extends Hack
 			return;
 		}
 		
-		int prevSlot = MC.player.getInventory().getSelectedSlot();
-		MC.player.getInventory().setSelectedSlot(slot);
+		int prevSlot = MC.player.getInventory().selectedSlot;
+		MC.player.getInventory().selectedSlot = slot;
 		MC.interactionManager.interactItem(MC.player, Hand.MAIN_HAND);
-		MC.player.getInventory().setSelectedSlot(prevSlot);
+		MC.player.getInventory().selectedSlot = prevSlot;
 	}
 	
 	private void updateBlockBreakingProgress()

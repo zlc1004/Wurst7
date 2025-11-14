@@ -24,13 +24,13 @@ public final class WurstLogoOtf extends OtherFeature
 		"Background color.\n"
 			+ "Only visible when \u00a76RainbowUI\u00a7r is disabled.",
 		Color.WHITE);
-
+	
 	private final ColorSetting txtColor =
 		new ColorSetting("Text", "Text color.", Color.BLACK);
-
+	
 	private final EnumSetting<Visibility> visibility =
 		new EnumSetting<>("Visibility", Visibility.values(), Visibility.ALWAYS);
-
+	
 	public WurstLogoOtf()
 	{
 		super("KoboshLogo", "Shows the Kobosh logo and version on the screen.");
@@ -38,43 +38,43 @@ public final class WurstLogoOtf extends OtherFeature
 		addSetting(txtColor);
 		addSetting(visibility);
 	}
-
+	
 	public boolean isVisible()
 	{
 		return visibility.getSelected().isVisible();
 	}
-
+	
 	public int getBackgroundColor()
 	{
 		return bgColor.getColorI(128);
 	}
-
+	
 	public int getTextColor()
 	{
 		return txtColor.getColorI();
 	}
-
+	
 	public static enum Visibility
 	{
 		ALWAYS("Always", () -> true),
-
+		
 		ONLY_OUTDATED("Only when outdated",
 			() -> WURST.getUpdater().isOutdated());
-
+		
 		private final String name;
 		private final BooleanSupplier visible;
-
+		
 		private Visibility(String name, BooleanSupplier visible)
 		{
 			this.name = name;
 			this.visible = visible;
 		}
-
+		
 		public boolean isVisible()
 		{
 			return visible.getAsBoolean();
 		}
-
+		
 		@Override
 		public String toString()
 		{

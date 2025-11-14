@@ -32,13 +32,13 @@ import net.wurstclient.util.ChatUtils;
 public class WurstOptionsScreen extends Screen
 {
 	private Screen prevScreen;
-
+	
 	public WurstOptionsScreen(Screen prevScreen)
 	{
 		super(Text.literal(""));
 		this.prevScreen = prevScreen;
 	}
-
+	
 	@Override
 	public void init()
 	{
@@ -46,12 +46,12 @@ public class WurstOptionsScreen extends Screen
 			.builder(Text.literal("Back"), b -> client.setScreen(prevScreen))
 			.dimensions(width / 2 - 100, height / 4 + 144 - 16, 200, 20)
 			.build());
-
+		
 		addSettingButtons();
 		addManagerButtons();
 		addLinkButtons();
 	}
-
+	
 	private void addSettingButtons()
 	{
 		WurstClient wurst = WurstClient.INSTANCE;
@@ -61,14 +61,14 @@ public class WurstOptionsScreen extends Screen
 		VanillaSpoofOtf vanillaSpoofOtf = wurst.getOtfs().vanillaSpoofOtf;
 		CheckboxSetting forceEnglish =
 			wurst.getOtfs().translationsOtf.getForceEnglish();
-
+		
 		new WurstOptionsButton(-154, 24,
 			() -> "Click Friends: "
 				+ (middleClickFriends.isChecked() ? "ON" : "OFF"),
 			middleClickFriends.getWrappedDescription(200),
 			b -> middleClickFriends
 				.setChecked(!middleClickFriends.isChecked()));
-
+		
 		new WurstOptionsButton(-154, 48,
 			() -> "Count Users: " + (plausible.isEnabled() ? "ON" : "OFF"),
 			"Counts how many people are using Wurst and which versions are the"
@@ -79,13 +79,13 @@ public class WurstOptionsScreen extends Screen
 				+ " There are no cookies or persistent identifiers"
 				+ " (see plausible.io).",
 			b -> plausible.setEnabled(!plausible.isEnabled()));
-
+		
 		new WurstOptionsButton(-154, 72,
 			() -> "Spoof Vanilla: "
 				+ (vanillaSpoofOtf.isEnabled() ? "ON" : "OFF"),
 			vanillaSpoofOtf.getDescription(),
 			b -> vanillaSpoofOtf.doPrimaryAction());
-
+		
 		new WurstOptionsButton(-154, 96,
 			() -> "Translations: " + (!forceEnglish.isChecked() ? "ON" : "OFF"),
 			"Allows text in Wurst to be displayed in other languages than"
@@ -93,30 +93,30 @@ public class WurstOptionsScreen extends Screen
 				+ " set to.\n\n" + "This is an experimental feature!",
 			b -> forceEnglish.setChecked(!forceEnglish.isChecked()));
 	}
-
+	
 	private void addManagerButtons()
 	{
 		XRayHack xRayHack = WurstClient.INSTANCE.getHax().xRayHack;
-
+		
 		new WurstOptionsButton(-50, 24, () -> "Keybinds",
 			"Keybinds allow you to toggle any hack or command by simply"
 				+ " pressing a button.",
 			b -> client.setScreen(new KeybindManagerScreen(this)));
-
+		
 		new WurstOptionsButton(-50, 48, () -> "X-Ray Blocks",
 			"Manager for the blocks that X-Ray will show.",
 			b -> xRayHack.openBlockListEditor(this));
-
+		
 		new WurstOptionsButton(-50, 72, () -> "Zoom",
 			"The Zoom Manager allows you to change the zoom key and how far it"
 				+ " will zoom in.",
 			b -> client.setScreen(new ZoomManagerScreen(this)));
 	}
-
+	
 	private void addLinkButtons()
 	{
 		OperatingSystem os = Util.getOperatingSystem();
-
+		
 		new WurstOptionsButton(54, 24, () -> "Kobosh Website", "§n§lkobosh.com",
 			b -> os.open("https://kobosh.com"));
 		//
@@ -142,36 +142,36 @@ public class WurstOptionsScreen extends Screen
 		// + " few cool perks in return.",
 		// b -> os.open("https://www.wurstclient.net/options-donate/"));
 	}
-
+	
 	@Override
 	public void close()
 	{
 		client.setScreen(prevScreen);
 	}
-
+	
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
 		renderBackground(context, mouseX, mouseY, partialTicks);
 		renderTitles(context);
-
+		
 		for(Drawable drawable : drawables)
 			drawable.render(context, mouseX, mouseY, partialTicks);
-
+		
 		renderButtonTooltip(context, mouseX, mouseY);
 	}
-
+	
 	private void renderTitles(DrawContext context)
 	{
 		TextRenderer tr = client.textRenderer;
 		int middleX = width / 2;
 		int y1 = 40;
 		int y2 = height / 4 + 24 - 28;
-
+		
 		context.drawCenteredTextWithShadow(tr, "Wurst Options", middleX, y1,
 			0xffffff);
-
+		
 		context.drawCenteredTextWithShadow(tr, "Settings", middleX - 104, y2,
 			0xcccccc);
 		context.drawCenteredTextWithShadow(tr, "Managers", middleX, y2,
@@ -179,7 +179,7 @@ public class WurstOptionsScreen extends Screen
 		context.drawCenteredTextWithShadow(tr, "Links", middleX + 104, y2,
 			0xcccccc);
 	}
-
+	
 	private void renderButtonTooltip(DrawContext context, int mouseX,
 		int mouseY)
 	{
@@ -187,22 +187,22 @@ public class WurstOptionsScreen extends Screen
 		{
 			if(!button.isSelected() || !(button instanceof WurstOptionsButton))
 				continue;
-
+			
 			WurstOptionsButton woButton = (WurstOptionsButton)button;
-
+			
 			if(woButton.tooltip.isEmpty())
 				continue;
-
+			
 			context.drawTooltip(textRenderer, woButton.tooltip, mouseX, mouseY);
 			break;
 		}
 	}
-
+	
 	private final class WurstOptionsButton extends ButtonWidget
 	{
 		private final Supplier<String> messageSupplier;
 		private final List<Text> tooltip;
-
+		
 		public WurstOptionsButton(int xOffset, int yOffset,
 			Supplier<String> messageSupplier, String tooltip,
 			PressAction pressAction)
@@ -211,25 +211,25 @@ public class WurstOptionsScreen extends Screen
 				WurstOptionsScreen.this.height / 4 - 16 + yOffset, 100, 20,
 				Text.literal(messageSupplier.get()), pressAction,
 				ButtonWidget.DEFAULT_NARRATION_SUPPLIER);
-
+			
 			this.messageSupplier = messageSupplier;
-
+			
 			if(tooltip.isEmpty())
 				this.tooltip = Arrays.asList();
 			else
 			{
 				String[] lines = ChatUtils.wrapText(tooltip, 200).split("\n");
-
+				
 				Text[] lines2 = new Text[lines.length];
 				for(int i = 0; i < lines.length; i++)
 					lines2[i] = Text.literal(lines[i]);
-
+				
 				this.tooltip = Arrays.asList(lines2);
 			}
-
+			
 			addDrawableChild(this);
 		}
-
+		
 		@Override
 		public void onPress()
 		{

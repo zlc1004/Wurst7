@@ -110,7 +110,7 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 		
 		// Store original slot before swapping
 		if(originalSlot == -1)
-			originalSlot = MC.player.getInventory().getSelectedSlot();
+			originalSlot = MC.player.getInventory().selectedSlot;
 		
 		// Schedule slot swap with configured wait time
 		shouldSwap = true;
@@ -126,7 +126,7 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 		
 		// Store original slot before swapping
 		if(originalSlot == -1)
-			originalSlot = MC.player.getInventory().getSelectedSlot();
+			originalSlot = MC.player.getInventory().selectedSlot;
 		
 		// Schedule slot swap with configured wait time
 		shouldSwap = true;
@@ -179,7 +179,7 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 			// Switch back to original slot
 			if(originalSlot != -1)
 			{
-				MC.player.getInventory().setSelectedSlot(originalSlot);
+				MC.player.getInventory().selectedSlot = originalSlot;
 				originalSlot = -1;
 				shouldSwitchBack = false;
 			}
@@ -197,13 +197,13 @@ public final class AttrSwapHack extends Hack implements LeftClickListener,
 		}
 		
 		// Perform the slot swap
-		int currentSlot = MC.player.getInventory().getSelectedSlot();
+		int currentSlot = MC.player.getInventory().selectedSlot;
 		int targetSlotIndex = targetSlot.getValueI() - 1; // Convert 1-9 to 0-8
 		
 		// Don't swap if already on target slot
 		if(currentSlot != targetSlotIndex)
 		{
-			MC.player.getInventory().setSelectedSlot(targetSlotIndex);
+			MC.player.getInventory().selectedSlot = targetSlotIndex;
 		}
 		
 		shouldSwap = false;

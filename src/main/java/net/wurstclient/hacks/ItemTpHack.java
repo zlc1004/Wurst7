@@ -123,7 +123,7 @@ public final class ItemTpHack extends Hack implements UpdateListener
 			// Wait at least 2 ticks (100ms) for server to respond
 			if(currentTime - teleportTimestamp >= 100)
 			{
-				Vec3d currentPos = player.getEntityPos();
+				Vec3d currentPos = player.getPos();
 				
 				// Check if we got pushed back (within 0.5 blocks of original
 				// position)
@@ -239,7 +239,7 @@ public final class ItemTpHack extends Hack implements UpdateListener
 		// Record position before teleport for pushback detection
 		if(checkPushback.isChecked())
 		{
-			positionBeforeTp = player.getEntityPos();
+			positionBeforeTp = player.getPos();
 			expectedPosition = new Vec3d(targetX, targetY, targetZ);
 			teleportTimestamp = currentTime;
 			waitingForPushbackCheck = true;

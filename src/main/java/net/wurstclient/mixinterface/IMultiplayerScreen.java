@@ -5,18 +5,11 @@
  * License, version 3. If a copy of the GPL was not distributed with this
  * file, You can obtain one at: https://www.gnu.org/licenses/gpl-3.0.txt
  */
-package net.wurstclient.serverfinder.api;
+package net.wurstclient.mixinterface;
 
-public class ServerInfoRequest
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
+
+public interface IMultiplayerScreen
 {
-	private final String api_key;
-	private final String ip;
-	private final int port;
-	
-	public ServerInfoRequest(String apiKey, String ip, int port)
-	{
-		this.api_key = apiKey;
-		this.ip = ip;
-		this.port = port;
-	}
+	public MultiplayerServerListWidget getServerListSelector();
 }

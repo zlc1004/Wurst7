@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
+import net.minecraft.client.render.VertexFormat;
 
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
@@ -249,9 +249,7 @@ public final class SeedXRayHack extends Hack
 		RenderUtils.applyRegionalRenderOffset(matrixStack, bufferRegion);
 		
 		// Use solid quads like SearchHack
-		float[] rainbow = RenderUtils.getRainbowColor();
-		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_QUADS, rainbow,
-			0.5F);
+		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_QUADS);
 		
 		matrixStack.pop();
 	}
@@ -284,51 +282,55 @@ public final class SeedXRayHack extends Hack
 			return;
 		}
 		
-		vertexBuffer = EasyVertexBuffer.createAndUpload(DrawMode.QUADS,
-			VertexFormats.POSITION_COLOR, buffer -> {
-				// Render each ore type separately for better performance
-				for(Map.Entry<ChunkPos, Map<OreData, Set<Vec3d>>> chunkEntry : chunkCache
-					.entrySet())
-				{
-					Map<OreData, Set<Vec3d>> chunkOres = chunkEntry.getValue();
-					
-					for(Map.Entry<OreData, Set<Vec3d>> oreEntry : chunkOres
+		vertexBuffer =
+			EasyVertexBuffer.createAndUpload(VertexFormat.DrawMode.QUADS,
+				VertexFormats.POSITION_COLOR, buffer -> {
+					// Render each ore type separately for better performance
+					for(Map.Entry<ChunkPos, Map<OreData, Set<Vec3d>>> chunkEntry : chunkCache
 						.entrySet())
 					{
-						OreData ore = oreEntry.getKey();
-						if(!ore.enabled.isChecked())
-							continue;
+						Map<OreData, Set<Vec3d>> chunkOres =
+							chunkEntry.getValue();
 						
-						Set<Vec3d> positions = oreEntry.getValue();
-						int color = ore.color | 0xFF000000; // Ensure alpha is
-															// set
-						
-						// Convert to BlockPos for face compilation
-						HashSet<BlockPos> oreBlocks = new HashSet<>();
-						for(Vec3d pos : positions)
+						for(Map.Entry<OreData, Set<Vec3d>> oreEntry : chunkOres
+							.entrySet())
 						{
-							BlockPos blockPos = BlockPos.ofFloored(pos);
-							if(onlyExposed.isChecked() && !isExposed(blockPos))
+							OreData ore = oreEntry.getKey();
+							if(!ore.enabled.isChecked())
 								continue;
-							oreBlocks.add(blockPos);
-						}
-						
-						if(oreBlocks.isEmpty())
-							continue;
-						
-						// Generate vertices for this ore type
-						ArrayList<int[]> vertices =
-							BlockVertexCompiler.compile(oreBlocks);
-						
-						// Add vertices with consistent color
-						for(int[] vertex : vertices)
-						{
-							buffer.vertex(vertex[0] - region.x(), vertex[1],
-								vertex[2] - region.z()).color(color);
+							
+							Set<Vec3d> positions = oreEntry.getValue();
+							int color = ore.color | 0xFF000000; // Ensure alpha
+																// is
+																// set
+							
+							// Convert to BlockPos for face compilation
+							HashSet<BlockPos> oreBlocks = new HashSet<>();
+							for(Vec3d pos : positions)
+							{
+								BlockPos blockPos = BlockPos.ofFloored(pos);
+								if(onlyExposed.isChecked()
+									&& !isExposed(blockPos))
+									continue;
+								oreBlocks.add(blockPos);
+							}
+							
+							if(oreBlocks.isEmpty())
+								continue;
+							
+							// Generate vertices for this ore type
+							ArrayList<int[]> vertices =
+								BlockVertexCompiler.compile(oreBlocks);
+							
+							// Add vertices with consistent color
+							for(int[] vertex : vertices)
+							{
+								buffer.vertex(vertex[0] - region.x(), vertex[1],
+									vertex[2] - region.z()).color(color);
+							}
 						}
 					}
-				}
-			});
+				});
 		
 		bufferRegion = region;
 	}

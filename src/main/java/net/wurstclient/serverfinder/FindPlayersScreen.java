@@ -258,9 +258,10 @@ public class FindPlayersScreen extends Screen
 		String status = getStatusText();
 		if(status != null)
 		{
-			int color = state == FindPlayerState.ERROR ? Colors.RED : Colors.WHITE;
-			context.drawCenteredTextWithShadow(textRenderer, status,
-				width / 2, height / 4 + 64, color);
+			int color =
+				state == FindPlayerState.ERROR ? Colors.RED : Colors.WHITE;
+			context.drawCenteredTextWithShadow(textRenderer, status, width / 2,
+				height / 4 + 64, color);
 		}
 	}
 	
@@ -269,18 +270,18 @@ public class FindPlayersScreen extends Screen
 		switch(state)
 		{
 			case SEARCHING:
-				return "Searching...";
+			return "Searching...";
 			
 			case DONE:
-				return serversFound > 0 ? "Found " + serversFound + " servers"
-					: "No servers found";
+			return serversFound > 0 ? "Found " + serversFound + " servers"
+				: "No servers found";
 			
 			case ERROR:
-				return lastError != null ? "Error: " + lastError
-					: "An error occurred";
+			return lastError != null ? "Error: " + lastError
+				: "An error occurred";
 			
 			default:
-				return null;
+			return null;
 		}
 	}
 	

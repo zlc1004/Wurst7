@@ -30,7 +30,7 @@ public final class BookKickHack extends Hack
 	protected void onEnable()
 	{
 		assert MC.player != null;
-		if(!(MC.player.getInventory().getSelectedStack()
+		if(!(MC.player.getInventory().getMainHandStack()
 			.getItem() == Items.WRITABLE_BOOK))
 		{
 			ChatUtils.error("Please hold a writable book!");
@@ -38,7 +38,7 @@ public final class BookKickHack extends Hack
 			return;
 		}
 		MC.player.networkHandler.sendPacket(new BookUpdateC2SPacket(
-			MC.player.getInventory().getSelectedSlot(), List.of(""),
+			MC.player.getInventory().selectedSlot, List.of(""),
 			Optional.of("The quick brown fox jumps over the lazy dog")));
 		setEnabled(false);
 	}

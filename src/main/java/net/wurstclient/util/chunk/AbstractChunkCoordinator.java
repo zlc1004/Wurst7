@@ -31,41 +31,41 @@ public abstract class AbstractChunkCoordinator implements PacketInputListener
 		new HashMap<>();
 	protected final ChunkAreaSetting area;
 	private BiPredicate<BlockPos, BlockState> query;
-
+	
 	protected final Set<ChunkPos> chunksToUpdate =
 		Collections.synchronizedSet(new HashSet<>());
-
+	
 	public AbstractChunkCoordinator(BiPredicate<BlockPos, BlockState> query,
 		ChunkAreaSetting area)
 	{
 		this.query = Objects.requireNonNull(query);
 		this.area = Objects.requireNonNull(area);
 	}
-
+	
 	public boolean update()
 	{
 		DimensionType dimension = WurstClient.MC.world.getDimension();
 		HashSet<ChunkPos> chunkUpdates = clearChunksToUpdate();
 		boolean searchersChanged = false;
-
+		
 		// remove outdated ChunkSearchers
 		for(ChunkSearcher searcher : new ArrayList<>(searchers.values()))
 		{
 			boolean remove = false;
 			ChunkPos searcherPos = searcher.getPos();
-
+			
 			// wrong dimension
 			if(dimension != searcher.getDimension())
 				remove = true;
-
+			
 			// out of range
 			else if(!area.isInRange(searcherPos))
 				remove = true;
-
+			
 			// chunk update
 			else if(chunkUpdates.contains(searcherPos))
 				remove = true;
-
+			
 			if(remove)
 			{
 				searchers.remove(searcherPos);
@@ -74,58 +74,58 @@ public abstract class AbstractChunkCoordinator implements PacketInputListener
 				searchersChanged = true;
 			}
 		}
-
+		
 		// add new ChunkSearchers
 		for(Chunk chunk : area.getChunksInRange())
 		{
 			ChunkPos chunkPos = chunk.getPos();
 			if(searchers.containsKey(chunkPos))
 				continue;
-
+			
 			ChunkSearcher searcher = new ChunkSearcher(query, chunk, dimension);
 			searchers.put(chunkPos, searcher);
 			searcher.start();
 			searchersChanged = true;
 		}
-
+		
 		return searchersChanged;
 	}
-
+	
 	protected void onRemove(ChunkSearcher searcher)
 	{
 		// Overridden in ChunkVertexBufferCoordinator
 	}
-
+	
 	public void reset()
 	{
 		searchers.values().forEach(ChunkSearcher::cancel);
 		searchers.clear();
 		chunksToUpdate.clear();
 	}
-
+	
 	public boolean isDone()
 	{
 		return searchers.values().stream().allMatch(ChunkSearcher::isDone);
 	}
-
+	
 	public void setQuery(BiPredicate<BlockPos, BlockState> query)
 	{
 		this.query = Objects.requireNonNull(query);
 		searchers.values().forEach(ChunkSearcher::cancel);
 		searchers.clear();
 	}
-
+	
 	public void setTargetBlock(Block block)
 	{
 		setQuery((pos, state) -> block == state.getBlock());
 	}
-
+	
 	public void setTargetBlocks(java.util.List<Block> blocks)
 	{
 		Objects.requireNonNull(blocks);
 		if(blocks.isEmpty())
 			throw new IllegalArgumentException("blocks list cannot be empty");
-
+		
 		// Create query that matches any of the specified blocks
 		setQuery((pos, state) -> {
 			for(Block block : blocks)
@@ -134,7 +134,7 @@ public abstract class AbstractChunkCoordinator implements PacketInputListener
 			return false;
 		});
 	}
-
+	
 	protected HashSet<ChunkPos> clearChunksToUpdate()
 	{
 		synchronized(chunksToUpdate)

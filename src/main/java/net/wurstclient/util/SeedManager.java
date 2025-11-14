@@ -142,10 +142,9 @@ public class SeedManager
 			{
 				try
 				{
-					// Handle Optional<Long> return type
-					java.util.Optional<Long> optionalSeed = nbt.getLong(key);
-					if(optionalSeed.isPresent())
-						seeds.put(key, optionalSeed.get());
+					// Handle long return type directly
+					long seed = nbt.getLong(key);
+					seeds.put(key, seed);
 				}catch(Exception e)
 				{
 					// Skip invalid entries

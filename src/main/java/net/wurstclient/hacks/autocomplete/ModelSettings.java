@@ -21,21 +21,21 @@ import net.wurstclient.settings.TextFieldSetting;
 
 public final class ModelSettings
 {
-
+	
 	public final SliderSetting maxTokens = new SliderSetting("Max tokens",
 		"The maximum number of tokens that the model can generate.\n\n"
 			+ "Higher values allow the model to predict longer chat messages,"
 			+ " but also increase the time it takes to generate predictions.\n\n"
 			+ "The default value of 16 is fine for most use cases.",
 		16, 1, 100, 1, ValueDisplay.INTEGER);
-
+	
 	public final SliderSetting topP = new SliderSetting("Top P",
 		"An alternative to temperature. Makes the model less random by only"
 			+ " letting it choose from the most likely tokens.\n\n"
 			+ "A value of 100% disables this feature by letting the model"
 			+ " choose from all tokens.",
 		1, 0, 1, 0.01, ValueDisplay.PERCENTAGE);
-
+	
 	public final SliderSetting presencePenalty =
 		new SliderSetting("Presence penalty",
 			"Penalty for choosing tokens that already appear in the chat"
@@ -44,7 +44,7 @@ public final class ModelSettings
 				+ " talk about different topics. Negative values encourage the"
 				+ " model to repeat the same word over and over again.",
 			0, -2, 2, 0.01, ValueDisplay.DECIMAL);
-
+	
 	public final SliderSetting frequencyPenalty =
 		new SliderSetting("Frequency penalty",
 			"Similar to presence penalty, but based on how often the token"
@@ -53,7 +53,7 @@ public final class ModelSettings
 				+ " talk about different topics. Negative values encourage the"
 				+ " model to repeat existing chat messages.",
 			0, -2, 2, 0.01, ValueDisplay.DECIMAL);
-
+	
 	public final EnumSetting<StopSequence> stopSequence = new EnumSetting<>(
 		"Stop sequence",
 		"Controls how AutoComplete detects the end of a chat message.\n\n"
@@ -63,33 +63,33 @@ public final class ModelSettings
 			+ " code-optimized language models, which have a tendency to insert"
 			+ " line breaks in the middle of a chat message.",
 		StopSequence.values(), StopSequence.LINE_BREAK);
-
+	
 	public enum StopSequence
 	{
 		LINE_BREAK("Line Break", "\n"),
 		NEXT_MESSAGE("Next Message", "\n<");
-
+		
 		private final String name;
 		private final String sequence;
-
+		
 		private StopSequence(String name, String sequence)
 		{
 			this.name = name;
 			this.sequence = sequence;
 		}
-
+		
 		public String getSequence()
 		{
 			return sequence;
 		}
-
+		
 		@Override
 		public String toString()
 		{
 			return name;
 		}
 	}
-
+	
 	public final SliderSetting contextLength = new SliderSetting(
 		"Context length",
 		"Controls how many messages from the chat history are used to generate"
@@ -98,7 +98,7 @@ public final class ModelSettings
 			+ " increase the time it takes to generate them, as well as cost"
 			+ " (for APIs like OpenAI) or RAM usage (for self-hosted models).",
 		10, 0, 100, 1, ValueDisplay.INTEGER);
-
+	
 	public final CheckboxSetting filterServerMessages =
 		new CheckboxSetting("Filter server messages",
 			"Only shows player-made chat messages to the model.\n\n"
@@ -107,7 +107,7 @@ public final class ModelSettings
 				+ " no idea about events like players joining, leaving, dying,"
 				+ " etc.",
 			false);
-
+	
 	public final TextFieldSetting customModel = new TextFieldSetting(
 		"Custom model",
 		"If set, this model will be used instead of the one specified in the"
@@ -116,67 +116,67 @@ public final class ModelSettings
 			+ " using a custom endpoint that is OpenAI-compatible but offers"
 			+ " different models.",
 		"");
-
+	
 	public final EnumSetting<CustomModelType> customModelType =
 		new EnumSetting<>("Custom model type", "Whether the custom"
 			+ " model should use the chat endpoint or the legacy endpoint.\n\n"
 			+ "If \"Custom model\" is left blank, this setting is ignored.",
 			CustomModelType.values(), CustomModelType.CHAT);
-
+	
 	public enum CustomModelType
 	{
 		CHAT("Chat", true),
 		LEGACY("Legacy", false);
-
+		
 		private final String name;
 		private final boolean chat;
-
+		
 		private CustomModelType(String name, boolean chat)
 		{
 			this.name = name;
 			this.chat = chat;
 		}
-
+		
 		public boolean isChat()
 		{
 			return chat;
 		}
-
+		
 		@Override
 		public String toString()
 		{
 			return name;
 		}
 	}
-
+	
 	public final TextFieldSetting openaiChatEndpoint = new TextFieldSetting(
 		"OpenAI chat endpoint", "Endpoint for OpenAI's chat completion API.",
 		"https://api.openai.com/v1/chat/completions");
-
+	
 	public final TextFieldSetting openaiLegacyEndpoint =
 		new TextFieldSetting("OpenAI legacy endpoint",
 			"Endpoint for OpenAI's legacy completion API.",
 			"https://api.openai.com/v1/completions");
-
+	
 	public final TextFieldSetting customAuthToken = new TextFieldSetting(
 		"Custom auth token",
 		"Authentication token for custom endpoints.\n\n"
 			+ "If left blank, the WURST_OPENAI_KEY environment variable will be used.",
 		"");
-
+	
 	public final CheckboxSetting useBearerToken = new CheckboxSetting(
 		"Use Bearer token",
 		"Add 'Bearer ' prefix to the authentication token.\n\n"
 			+ "Enable this for OpenAI-compatible APIs that require Bearer authentication.\n"
 			+ "Disable for APIs that use plain tokens or custom authentication.",
 		true);
-
+	
 	private final List<Setting> settings = Collections
 		.unmodifiableList(Arrays.asList(maxTokens, topP, presencePenalty,
 			frequencyPenalty, stopSequence, contextLength, filterServerMessages,
 			customModel, customModelType, openaiChatEndpoint,
 			openaiLegacyEndpoint, customAuthToken, useBearerToken));
-
+	
 	public void forEach(Consumer<Setting> action)
 	{
 		settings.forEach(action);

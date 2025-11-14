@@ -29,36 +29,36 @@ public abstract class GenericContainerScreenMixin
 	@Shadow
 	@Final
 	private int rows;
-
+	
 	@Unique
 	private final AutoStealHack autoSteal =
 		WurstClient.INSTANCE.getHax().autoStealHack;
 	@Unique
 	private final AutoSellHack autoSellHack =
 		WurstClient.INSTANCE.getHax().autoSellHack;
-
+	
 	public GenericContainerScreenMixin(WurstClient wurst,
 		GenericContainerScreenHandler container,
 		PlayerInventory playerInventory, Text name)
 	{
 		super(container, playerInventory, name);
 	}
-
+	
 	@Override
 	public void init()
 	{
 		super.init();
-
+		
 		if(!WurstClient.INSTANCE.isEnabled())
 			return;
-
+		
 		if(autoSteal.areButtonsVisible())
 		{
 			addDrawableChild(ButtonWidget
 				.builder(Text.literal("Steal"),
 					b -> autoSteal.steal(this, rows))
 				.dimensions(x + backgroundWidth - 108, y + 4, 50, 12).build());
-
+			
 			addDrawableChild(ButtonWidget
 				.builder(Text.literal("Store"),
 					b -> autoSteal.store(this, rows))
@@ -71,13 +71,13 @@ public abstract class GenericContainerScreenMixin
 					.dimensions(x + backgroundWidth - 56, y + 4 - 16, 50, 12)
 					.build());
 		}
-
+		
 		if(autoSteal.isEnabled())
 			autoSteal.steal(this, rows);
 		if(autoSellHack.isEnabled())
 			LZFunc();
 	}
-
+	
 	@Unique
 	public void LZFunc()
 	{
@@ -105,7 +105,7 @@ public abstract class GenericContainerScreenMixin
 			}
 		});
 	}
-
+	
 	@Unique
 	private void runInThread(Runnable r)
 	{
@@ -119,7 +119,7 @@ public abstract class GenericContainerScreenMixin
 			}
 		}).start();
 	}
-
+	
 	@Unique
 	private void waitForDelaySell()
 	{
@@ -131,7 +131,7 @@ public abstract class GenericContainerScreenMixin
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Unique
 	private void waitForDelaySet(int n)
 	{

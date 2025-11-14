@@ -31,7 +31,7 @@ public final class BookDupeHack extends Hack
 	protected void onEnable()
 	{
 		assert MC.player != null;
-		if(!(MC.player.getInventory().getSelectedStack()
+		if(!(MC.player.getInventory().getMainHandStack()
 			.getItem() == Items.WRITABLE_BOOK))
 		{
 			ChatUtils.error("You need to hold a book and quill!");
@@ -40,14 +40,14 @@ public final class BookDupeHack extends Hack
 		}
 		for(int i = 9; i < 44; i++)
 		{
-			if(36 + MC.player.getInventory().getSelectedSlot() == i)
+			if(36 + MC.player.getInventory().selectedSlot == i)
 				continue;
 			MC.interactionManager.clickSlot(
 				MC.player.currentScreenHandler.syncId, i, 1,
 				SlotActionType.THROW, MC.player);
 		}
 		MC.player.networkHandler.sendPacket(new BookUpdateC2SPacket(
-			MC.player.getInventory().getSelectedSlot(), List.of(""),
+			MC.player.getInventory().selectedSlot, List.of(""),
 			Optional.of("The quick brown fox jumps over the lazy dog")));
 		setEnabled(false);
 	}

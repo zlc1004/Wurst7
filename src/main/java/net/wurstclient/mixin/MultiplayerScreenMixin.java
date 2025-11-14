@@ -29,52 +29,52 @@ import net.wurstclient.util.LastServerRememberer;
 public class MultiplayerScreenMixin extends Screen
 {
 	private ButtonWidget lastServerButton;
-
+	
 	private MultiplayerScreenMixin(WurstClient wurst, Text title)
 	{
 		super(title);
 	}
-
+	
 	@Inject(at = @At("TAIL"), method = "init()V")
 	private void onInit(CallbackInfo ci)
 	{
 		if(!WurstClient.INSTANCE.isEnabled())
 			return;
-
+		
 		lastServerButton = addDrawableChild(ButtonWidget
 			.builder(Text.literal("Last Server"),
 				b -> LastServerRememberer
 					.joinLastServer((MultiplayerScreen)(Object)this))
 			.dimensions(width / 2 - 154, 10, 100, 20).build());
 		updateLastServerButton();
-
+		
 		addDrawableChild(ButtonWidget
 			.builder(Text.literal("Find Players"),
 				b -> client.setScreen(
 					new FindPlayersScreen((MultiplayerScreen)(Object)this)))
 			.dimensions(width / 2 + 48, height - 54, 100, 20).build());
-
+		
 		addDrawableChild(
 			ButtonWidget
 				.builder(Text.literal("ServerSeeker"),
 					b -> client.setScreen(new ServerFinderScreen(
 						(MultiplayerScreen)(Object)this)))
 				.dimensions(width / 2 + 154 + 4, height - 54, 100, 20).build());
-
+		
 		addDrawableChild(ButtonWidget
 			.builder(Text.literal("Get Players"),
 				b -> client.setScreen(
 					new GetPlayersScreen((MultiplayerScreen)(Object)this,
 						java.util.Collections.emptyList())))
 			.dimensions(width / 2 + 48, height - 30, 100, 20).build());
-
+		
 		addDrawableChild(ButtonWidget
 			.builder(Text.literal("Clean Up"),
 				b -> client.setScreen(
 					new CleanUpScreen((MultiplayerScreen)(Object)this)))
 			.dimensions(width / 2 + 154 + 4, height - 30, 100, 20).build());
 	}
-
+	
 	@Inject(at = @At("HEAD"),
 		method = "connect(Lnet/minecraft/client/network/ServerInfo;)V")
 	private void onConnect(ServerInfo entry, CallbackInfo ci)
@@ -82,13 +82,13 @@ public class MultiplayerScreenMixin extends Screen
 		LastServerRememberer.setLastServer(entry);
 		updateLastServerButton();
 	}
-
+	
 	@Unique
 	private void updateLastServerButton()
 	{
 		if(lastServerButton == null)
 			return;
-
+		
 		lastServerButton.active = LastServerRememberer.getLastServer() != null;
 	}
 }
