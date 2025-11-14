@@ -23,16 +23,16 @@ public final class GamemodeNotifierHack extends Hack
 {
 	private final CheckboxSetting survival = new CheckboxSetting("Survival",
 		"Notify when a player changes to Survival mode.", true);
-
+	
 	private final CheckboxSetting creative = new CheckboxSetting("Creative",
 		"Notify when a player changes to Creative mode.", true);
-
+	
 	private final CheckboxSetting adventure = new CheckboxSetting("Adventure",
 		"Notify when a player changes to Adventure mode.", true);
-
+	
 	private final CheckboxSetting spectator = new CheckboxSetting("Spectator",
 		"Notify when a player changes to Spectator mode.", true);
-
+	
 	public GamemodeNotifierHack()
 	{
 		super("GamemodeNotifier");
@@ -42,54 +42,54 @@ public final class GamemodeNotifierHack extends Hack
 		addSetting(adventure);
 		addSetting(spectator);
 	}
-
+	
 	@Override
 	protected void onEnable()
 	{
 		EVENTS.add(PacketInputListener.class, this);
 	}
-
+	
 	@Override
 	protected void onDisable()
 	{
 		EVENTS.remove(PacketInputListener.class, this);
 	}
-
+	
 	@Override
 	public void onReceivedPacket(PacketInputEvent event)
 	{
 		if(!(event.getPacket() instanceof PlayerListS2CPacket packet))
 			return;
-
+		
 		// Check if network handler is available
 		if(MC.getNetworkHandler() == null)
 			return;
-
+		
 		for(PlayerListS2CPacket.Entry entry : packet.getEntries())
 		{
 			if(!packet.getActions()
 				.contains(PlayerListS2CPacket.Action.UPDATE_GAME_MODE))
 				continue;
-
+			
 			PlayerListEntry playerEntry =
 				MC.getNetworkHandler().getPlayerListEntry(entry.profileId());
 			if(playerEntry == null)
 				continue;
-
+			
 			GameMode newGameMode = entry.gameMode();
 			if(playerEntry.getGameMode() == newGameMode)
 				continue;
-
+			
 			if(!shouldNotify(newGameMode))
 				continue;
-
+			
 			String playerName = playerEntry.getProfile().getName();
 			String gameModeName = getGameModeName(newGameMode);
 			ChatUtils.message("Player " + playerName + " changed gamemode to "
 				+ gameModeName);
 		}
 	}
-
+	
 	private boolean shouldNotify(GameMode gameMode)
 	{
 		return switch(gameMode)
@@ -100,7 +100,7 @@ public final class GamemodeNotifierHack extends Hack
 			case SPECTATOR -> spectator.isChecked();
 		};
 	}
-
+	
 	private String getGameModeName(GameMode gameMode)
 	{
 		return switch(gameMode)
