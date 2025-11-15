@@ -51,6 +51,7 @@ public final class HackList implements UpdateListener
 	public final AutoDropHack autoDropHack = new AutoDropHack();
 	public final AutoLeaveHack autoLeaveHack = new AutoLeaveHack();
 	public final AutoLibrarianHack autoLibrarianHack = new AutoLibrarianHack();
+	public final AutoTraderHack autoTraderHack = new AutoTraderHack();
 	public final AutoEatHack autoEatHack = new AutoEatHack();
 	public final AutoFarmHack autoFarmHack = new AutoFarmHack();
 	public final AutoFishHack autoFishHack = new AutoFishHack();
@@ -117,6 +118,7 @@ public final class HackList implements UpdateListener
 	public final GlideHack glideHack = new GlideHack();
 	public final GamemodeNotifierHack gamemodeNotifierHack =
 		new GamemodeNotifierHack();
+	public final GunAimBotHack gunAimBotHack = new GunAimBotHack();
 	public final HandNoClipHack handNoClipHack = new HandNoClipHack();
 	public final HeadRollHack headRollHack = new HeadRollHack();
 	public final HealthTagsHack healthTagsHack = new HealthTagsHack();
@@ -127,6 +129,7 @@ public final class HackList implements UpdateListener
 	public final InvWalkHack invWalkHack = new InvWalkHack();
 	public final ItemEspHack itemEspHack = new ItemEspHack();
 	public final ItemGeneratorHack itemGeneratorHack = new ItemGeneratorHack();
+	public final ItemSearchHack itemSearchHack = new ItemSearchHack();
 	public final ItemTpHack itemTpHack = new ItemTpHack();
 	public final JesusHack jesusHack = new JesusHack();
 	public final JetpackHack jetpackHack = new JetpackHack();

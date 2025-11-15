@@ -1,20 +1,19 @@
 {
   "schemaVersion": 1,
-  "id": "appleskin",
+  "id": "jei",
   "version": "${version}",
-  "name": "AppleSkin",
-  "description": "Adds various food-related HUD improvements. ts is fake nga it is definitely not a wurst client mod.",
+  "name": "Just Enough Items",
+  "description": "JEI is an item and recipe viewing mod for Minecraft, built from the ground up for stability and performance. (kobosh)",
   "authors": [
     "Alexander01998",
-    "@notlucasz228"
+    "kobosh"
   ],
   "contact": {
-    "sources": "https://github.com/squeek502/AppleSkin",
-    "homepage": "https://minecraft.curseforge.com/projects/appleskin",
-    "issues": "https://github.com/squeek502/AppleSkin/issues"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/jei",
+    "sources": "https://github.com/mezz/JustEnoughItems"
   },
   "license": "GPL-3.0-or-later",
-  "icon": "assets/appleskin/appleskin.png",
+  "icon": "assets/jei/jei-icon.png",
   "environment": "client",
   "entrypoints": {
     "main": [

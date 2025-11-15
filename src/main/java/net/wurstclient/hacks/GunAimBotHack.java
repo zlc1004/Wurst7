@@ -1,0 +1,204 @@
+/*
+ * Copyright (c) 2014-2025 Wurst-Imperium and contributors.
+ *
+ * This source code is subject to the terms of the GNU General Public
+ * License, version 3. If a copy of the GPL was not distributed with this
+ * file, You can obtain one at: https://www.gnu.org/licenses/gpl-3.0.txt
+ */
+package net.wurstclient.hacks;
+
+import java.util.Comparator;
+import java.util.stream.Stream;
+
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.Vec3d;
+import net.wurstclient.Category;
+import net.wurstclient.SearchTags;
+import net.wurstclient.events.MouseUpdateListener;
+import net.wurstclient.events.UpdateListener;
+import net.wurstclient.hack.Hack;
+import net.wurstclient.settings.AimAtSetting;
+import net.wurstclient.settings.CheckboxSetting;
+import net.wurstclient.settings.SliderSetting;
+import net.wurstclient.settings.SliderSetting.ValueDisplay;
+import net.wurstclient.util.BlockUtils;
+import net.wurstclient.util.EntityUtils;
+import net.wurstclient.util.Rotation;
+import net.wurstclient.util.RotationUtils;
+
+@SearchTags({"gun aim bot", "gun aimbot", "aimbot", "gun targeting", "sniper"})
+public final class GunAimBotHack extends Hack
+	implements UpdateListener, MouseUpdateListener
+{
+	private final SliderSetting range =
+		new SliderSetting("Range", 50, 0, 500, 1, ValueDisplay.DECIMAL);
+	
+	private final SliderSetting rotationSpeed =
+		new SliderSetting("Rotation Speed", 30, 1, 180, 1,
+			ValueDisplay.DEGREES.withSuffix("/tick"));
+	
+	private final SliderSetting fov =
+		new SliderSetting("FOV", "Field of view for targeting players.", 120,
+			30, 360, 10, ValueDisplay.DEGREES);
+	
+	private final AimAtSetting aimAt =
+		new AimAtSetting("What point in the target's hitbox to aim at.");
+	
+	private final SliderSetting ignoreMouseInput = new SliderSetting(
+		"Ignore mouse input", "How much to ignore existing mouse movement.", 0,
+		0, 1, 0.01, ValueDisplay.PERCENTAGE);
+	
+	private final CheckboxSetting checkLOS = new CheckboxSetting(
+		"Check line of sight", "Only target players that are visible.", true);
+	
+	private final CheckboxSetting aimWhileBlocking =
+		new CheckboxSetting("Aim while blocking",
+			"Continue aiming while blocking/using items.", false);
+	
+	private final CheckboxSetting ignoreFriends = new CheckboxSetting(
+		"Ignore friends", "Don't target players on your friends list.", true);
+	
+	private final CheckboxSetting ignoreInvisible = new CheckboxSetting(
+		"Ignore invisible", "Don't target invisible players.", true);
+	
+	private PlayerEntity target;
+	private float nextYaw;
+	private float nextPitch;
+	
+	public GunAimBotHack()
+	{
+		super("GunAimBot");
+		setCategory(Category.COMBAT);
+		
+		addSetting(range);
+		addSetting(rotationSpeed);
+		addSetting(fov);
+		addSetting(aimAt);
+		addSetting(ignoreMouseInput);
+		addSetting(checkLOS);
+		addSetting(aimWhileBlocking);
+		addSetting(ignoreFriends);
+		addSetting(ignoreInvisible);
+	}
+	
+	@Override
+	protected void onEnable()
+	{
+		// disable incompatible hacks
+		WURST.getHax().aimAssistHack.setEnabled(false);
+		WURST.getHax().clickAuraHack.setEnabled(false);
+		WURST.getHax().crystalAuraHack.setEnabled(false);
+		WURST.getHax().fightBotHack.setEnabled(false);
+		WURST.getHax().killauraHack.setEnabled(false);
+		WURST.getHax().killauraLegitHack.setEnabled(false);
+		WURST.getHax().multiAuraHack.setEnabled(false);
+		WURST.getHax().protectHack.setEnabled(false);
+		WURST.getHax().tpAuraHack.setEnabled(false);
+		
+		EVENTS.add(UpdateListener.class, this);
+		EVENTS.add(MouseUpdateListener.class, this);
+	}
+	
+	@Override
+	protected void onDisable()
+	{
+		EVENTS.remove(UpdateListener.class, this);
+		EVENTS.remove(MouseUpdateListener.class, this);
+		target = null;
+	}
+	
+	@Override
+	public void onUpdate()
+	{
+		target = null;
+		
+		// don't aim when a container/inventory screen is open
+		if(MC.currentScreen instanceof HandledScreen)
+			return;
+		
+		if(!aimWhileBlocking.isChecked() && MC.player.isUsingItem())
+			return;
+		
+		chooseTarget();
+		if(target == null)
+			return;
+		
+		Vec3d hitVec = aimAt.getAimPoint(target);
+		if(checkLOS.isChecked() && !BlockUtils.hasLineOfSight(hitVec))
+		{
+			target = null;
+			return;
+		}
+		
+		// get needed rotation
+		Rotation needed = RotationUtils.getNeededRotations(hitVec);
+		
+		// turn towards target
+		Rotation next =
+			RotationUtils.slowlyTurnTowards(needed, rotationSpeed.getValueF());
+		nextYaw = next.yaw();
+		nextPitch = next.pitch();
+	}
+	
+	private void chooseTarget()
+	{
+		Stream<Entity> stream = EntityUtils.getAttackableEntities();
+		
+		// Only target players
+		stream = stream.filter(e -> e instanceof PlayerEntity);
+		
+		double rangeSq = range.getValueSq();
+		stream = stream.filter(e -> MC.player.squaredDistanceTo(e) <= rangeSq);
+		
+		if(fov.getValue() < 360.0)
+			stream = stream.filter(e -> RotationUtils.getAngleToLookVec(
+				aimAt.getAimPoint(e)) <= fov.getValue() / 2.0);
+		
+		// Filter out friends if enabled
+		if(ignoreFriends.isChecked())
+			stream = stream.filter(e -> !WURST.getFriends()
+				.contains(((PlayerEntity)e).getGameProfile().getName()));
+		
+		// Filter out invisible players if enabled
+		if(ignoreInvisible.isChecked())
+			stream = stream.filter(e -> !e.isInvisible());
+		
+		// Don't target ourselves
+		stream = stream.filter(e -> e != MC.player);
+		
+		target = (PlayerEntity)stream
+			.min(Comparator.comparingDouble(
+				e -> RotationUtils.getAngleToLookVec(aimAt.getAimPoint(e))))
+			.orElse(null);
+	}
+	
+	@Override
+	public void onMouseUpdate(MouseUpdateEvent event)
+	{
+		if(target == null || MC.player == null)
+			return;
+		
+		float curYaw = MC.player.getYaw();
+		float curPitch = MC.player.getPitch();
+		int diffYaw = (int)(nextYaw - curYaw);
+		int diffPitch = (int)(nextPitch - curPitch);
+		
+		// If we are <1 degree off but still missing the hitbox,
+		// slightly exaggerate the difference to fix that.
+		if(diffYaw == 0 && diffPitch == 0 && !RotationUtils
+			.isFacingBox(target.getBoundingBox(), range.getValue()))
+		{
+			diffYaw = nextYaw < curYaw ? -1 : 1;
+			diffPitch = nextPitch < curPitch ? -1 : 1;
+		}
+		
+		double inputFactor = 1 - ignoreMouseInput.getValue();
+		int mouseInputX = (int)(event.getDefaultDeltaX() * inputFactor);
+		int mouseInputY = (int)(event.getDefaultDeltaY() * inputFactor);
+		
+		event.setDeltaX(mouseInputX + diffYaw);
+		event.setDeltaY(mouseInputY + diffPitch);
+	}
+}
