@@ -70,6 +70,7 @@ public final class CmdList
 	public final UnbindCmd unbindCmd = new UnbindCmd();
 	public final VClipCmd vClipCmd = new VClipCmd();
 	public final ViewCompCmd viewCompCmd = new ViewCompCmd();
+	public final ViewLogsCmd viewLogsCmd = new ViewLogsCmd();
 	public final ViewNbtCmd viewNbtCmd = new ViewNbtCmd();
 	public final XrayCmd xrayCmd = new XrayCmd();
 	

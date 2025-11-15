@@ -74,6 +74,7 @@ public final class HackList implements UpdateListener
 	public final BaseFinderHack baseFinderHack = new BaseFinderHack();
 	public final BedFinderHack bedFinderHack = new BedFinderHack();
 	public final BlinkHack blinkHack = new BlinkHack();
+	public final BlockLoggerHack blockLoggerHack = new BlockLoggerHack();
 	public final BoatFlyHack boatFlyHack = new BoatFlyHack();
 	public final BoatGlitchHack boatGlitchHack = new BoatGlitchHack();
 	public final BoatPhaseHack boatPhaseHack = new BoatPhaseHack();
@@ -102,6 +103,7 @@ public final class HackList implements UpdateListener
 	public final DerpHack derpHack = new DerpHack();
 	public final DolphinHack dolphinHack = new DolphinHack();
 	public final ExcavatorHack excavatorHack = new ExcavatorHack();
+	public final ExplorationHack explorationHack = new ExplorationHack();
 	public final ExtraElytraHack extraElytraHack = new ExtraElytraHack();
 	public final FancyChatHack fancyChatHack = new FancyChatHack();
 	public final FastBreakHack fastBreakHack = new FastBreakHack();
