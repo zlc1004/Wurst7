@@ -22,14 +22,13 @@ import net.wurstclient.util.MathUtils;
 import net.wurstclient.util.json.JsonException;
 
 @DontBlock
-public final class SettingsCmd extends Command
+public final class EnabledHaxCmd extends Command
 {
-	public SettingsCmd()
+	public EnabledHaxCmd()
 	{
-		super("settings", "Allows you to make profiles of your settings.",
-			".settings load <file>", ".settings save <file>",
-			".settings list [<page>]",
-			"Profiles are saved in '.minecraft/wurst/settings'.");
+		super("h", "Allows you to make profiles of enabled hacks.",
+			".h save <file>", ".h load <file>", ".h list [<page>]",
+			"Profiles are saved in '.minecraft/wurst/enabled hacks'.");
 	}
 	
 	@Override
@@ -66,8 +65,8 @@ public final class SettingsCmd extends Command
 		
 		try
 		{
-			WURST.loadSettingsProfile(name);
-			ChatUtils.message("Settings loaded: " + name);
+			WURST.getHax().loadProfile(name);
+			ChatUtils.message("Hacks loaded: " + name);
 			
 		}catch(NoSuchFileException e)
 		{
@@ -95,8 +94,8 @@ public final class SettingsCmd extends Command
 		
 		try
 		{
-			WURST.saveSettingsProfile(name);
-			ChatUtils.message("Settings saved: " + name);
+			WURST.getHax().saveProfile(name);
+			ChatUtils.message("Hacks saved: " + name);
 			
 		}catch(IOException | JsonException e)
 		{
@@ -119,7 +118,7 @@ public final class SettingsCmd extends Command
 		if(args.length > 2)
 			throw new CmdSyntaxError();
 		
-		ArrayList<Path> files = WURST.listSettingsProfiles();
+		ArrayList<Path> files = WURST.getHax().listProfiles();
 		int page = parsePage(args);
 		int pages = (int)Math.ceil(files.size() / 8.0);
 		pages = Math.max(pages, 1);
@@ -135,7 +134,7 @@ public final class SettingsCmd extends Command
 		int end = Math.min(page * 8, files.size());
 		
 		ChatUtils
-			.message("Settings profile list (page " + page + "/" + pages + ")");
+			.message("Hack profile list (page " + page + "/" + pages + ")");
 		for(int i = start; i < end; i++)
 			ChatUtils.message(files.get(i).getFileName().toString());
 	}
