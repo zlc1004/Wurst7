@@ -76,18 +76,22 @@ public final class AimAtSetting extends EnumSetting<AimAtSetting.AimAt>
 	
 	private static Vec3d aimAtHead(Entity e)
 	{
-		float eyeHeight = e.getEyeHeight(e.getPose());
-		return e.getPos().add(0, eyeHeight, 0);
+		// Aim at the top of the entity's bounding box (actual head)
+		Box box = e.getBoundingBox();
+		return new Vec3d(box.getCenter().x, box.maxY - 0.1, box.getCenter().z);
 	}
 	
 	private static Vec3d aimAtCenter(Entity e)
 	{
+		// Aim at the actual center of the entity's hitbox
 		return e.getBoundingBox().getCenter();
 	}
 	
 	private static Vec3d aimAtFeet(Entity e)
 	{
-		return e.getPos().add(0, 0.001, 0);
+		// Aim at the bottom of the entity's bounding box (actual feet)
+		Box box = e.getBoundingBox();
+		return new Vec3d(box.getCenter().x, box.minY + 0.1, box.getCenter().z);
 	}
 	
 	public enum AimAt

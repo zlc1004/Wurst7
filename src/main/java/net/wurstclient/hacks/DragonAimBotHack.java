@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.util.math.Vec3d;
 import net.wurstclient.Category;
 import net.wurstclient.SearchTags;
@@ -28,8 +28,9 @@ import net.wurstclient.util.EntityUtils;
 import net.wurstclient.util.Rotation;
 import net.wurstclient.util.RotationUtils;
 
-@SearchTags({"gun aim bot", "gun aimbot", "aimbot", "gun targeting", "sniper"})
-public final class GunAimBotHack extends Hack
+@SearchTags({"dragon aim bot", "dragon aimbot", "aimbot",
+	"ender dragon targeting", "dragon"})
+public final class DragonAimBotHack extends Hack
 	implements UpdateListener, MouseUpdateListener
 {
 	private final SliderSetting range =
@@ -40,49 +41,38 @@ public final class GunAimBotHack extends Hack
 			ValueDisplay.DEGREES.withSuffix("/tick"));
 	
 	private final SliderSetting fov =
-		new SliderSetting("FOV", "Field of view for targeting players.", 120,
+		new SliderSetting("FOV", "Field of view for targeting the dragon.", 120,
 			30, 360, 10, ValueDisplay.DEGREES);
 	
 	private final AimAtSetting aimAt =
-		new AimAtSetting("What point in the target's hitbox to aim at.");
+		new AimAtSetting("What point in the dragon's hitbox to aim at.");
+	
+	private final SliderSetting predictMovement = new SliderSetting(
+		"Predict movement",
+		"Controls the strength of DragonAimBot's movement prediction algorithm.",
+		0.2, 0, 2, 0.01, ValueDisplay.PERCENTAGE);
 	
 	private final SliderSetting ignoreMouseInput = new SliderSetting(
 		"Ignore mouse input", "How much to ignore existing mouse movement.", 0,
 		0, 1, 0.01, ValueDisplay.PERCENTAGE);
 	
 	private final CheckboxSetting checkLOS = new CheckboxSetting(
-		"Check line of sight", "Only target players that are visible.", true);
+		"Check line of sight", "Only target dragons that are visible.", true);
 	
 	private final CheckboxSetting aimWhileBlocking =
 		new CheckboxSetting("Aim while blocking",
 			"Continue aiming while blocking/using items.", false);
 	
-	private final CheckboxSetting ignoreFriends = new CheckboxSetting(
-		"Ignore friends", "Don't target players on your friends list.", true);
-	
-	private final CheckboxSetting ignoreInvisible = new CheckboxSetting(
-		"Ignore invisible", "Don't target invisible players.", true);
-	
 	private final CheckboxSetting snap = new CheckboxSetting("Snap",
 		"Instantly snap to targets instead of smooth rotation.", false);
 	
-	private final SliderSetting predictMovement = new SliderSetting(
-		"Predict movement",
-		"Controls the strength of GunAimBot's movement prediction algorithm.",
-		0.2, 0, 2, 0.01, ValueDisplay.PERCENTAGE);
-	
-	private final SliderSetting verticalOffset = new SliderSetting(
-		"Vertical offset",
-		"Vertical aiming offset. -100% = one entity height down, +100% = one entity height up.",
-		0, -1, 1, 0.01, ValueDisplay.PERCENTAGE);
-	
-	private PlayerEntity target;
+	private EnderDragonEntity target;
 	private float nextYaw;
 	private float nextPitch;
 	
-	public GunAimBotHack()
+	public DragonAimBotHack()
 	{
-		super("GunAimBot");
+		super("DragonAimBot");
 		setCategory(Category.COMBAT);
 		
 		addSetting(range);
@@ -90,12 +80,9 @@ public final class GunAimBotHack extends Hack
 		addSetting(fov);
 		addSetting(aimAt);
 		addSetting(predictMovement);
-		addSetting(verticalOffset);
 		addSetting(ignoreMouseInput);
 		addSetting(checkLOS);
 		addSetting(aimWhileBlocking);
-		addSetting(ignoreFriends);
-		addSetting(ignoreInvisible);
 		addSetting(snap);
 	}
 	
@@ -107,6 +94,7 @@ public final class GunAimBotHack extends Hack
 		WURST.getHax().clickAuraHack.setEnabled(false);
 		WURST.getHax().crystalAuraHack.setEnabled(false);
 		WURST.getHax().fightBotHack.setEnabled(false);
+		WURST.getHax().gunAimBotHack.setEnabled(false);
 		WURST.getHax().killauraHack.setEnabled(false);
 		WURST.getHax().killauraLegitHack.setEnabled(false);
 		WURST.getHax().multiAuraHack.setEnabled(false);
@@ -171,14 +159,6 @@ public final class GunAimBotHack extends Hack
 			hitVec = aimAt.getAimPoint(target);
 		}
 		
-		// Apply vertical offset
-		if(verticalOffset.getValue() != 0)
-		{
-			double offsetAmount =
-				verticalOffset.getValue() * target.getHeight();
-			hitVec = hitVec.add(0, offsetAmount, 0);
-		}
-		
 		if(checkLOS.isChecked() && !BlockUtils.hasLineOfSight(hitVec))
 		{
 			target = null;
@@ -210,8 +190,8 @@ public final class GunAimBotHack extends Hack
 	{
 		Stream<Entity> stream = EntityUtils.getAttackableEntities();
 		
-		// Only target players
-		stream = stream.filter(e -> e instanceof PlayerEntity);
+		// Only target Ender Dragons
+		stream = stream.filter(e -> e instanceof EnderDragonEntity);
 		
 		double rangeSq = range.getValueSq();
 		stream = stream.filter(e -> MC.player.squaredDistanceTo(e) <= rangeSq);
@@ -219,20 +199,12 @@ public final class GunAimBotHack extends Hack
 		if(fov.getValue() < 360.0)
 			stream = stream.filter(e -> RotationUtils.getAngleToLookVec(
 				aimAt.getAimPoint(e)) <= fov.getValue() / 2.0);
-		
-		// Filter out friends if enabled
-		if(ignoreFriends.isChecked())
-			stream = stream.filter(e -> !WURST.getFriends()
-				.contains(((PlayerEntity)e).getGameProfile().getName()));
-		
-		// Filter out invisible players if enabled
-		if(ignoreInvisible.isChecked())
-			stream = stream.filter(e -> !e.isInvisible());
-		
-		// Don't target ourselves
+			
+		// Don't target ourselves (shouldn't happen with dragons, but safety
+		// check)
 		stream = stream.filter(e -> e != MC.player);
 		
-		target = (PlayerEntity)stream
+		target = (EnderDragonEntity)stream
 			.min(Comparator.comparingDouble(
 				e -> RotationUtils.getAngleToLookVec(aimAt.getAimPoint(e))))
 			.orElse(null);

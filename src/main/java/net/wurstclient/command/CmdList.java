@@ -34,7 +34,9 @@ public final class CmdList
 	public final EnabledHaxCmd enabledHaxCmd = new EnabledHaxCmd();
 	public final EnchantCmd enchantCmd = new EnchantCmd();
 	public final ExcavateCmd excavateCmd = new ExcavateCmd();
+	public final ExploreCmd exploreCmd = new ExploreCmd();
 	public final FeaturesCmd featuresCmd = new FeaturesCmd();
+	public final FlyToCmd flyToCmd = new FlyToCmd();
 	public final FollowCmd followCmd = new FollowCmd();
 	public final FriendsCmd friendsCmd = new FriendsCmd();
 	public final GetPosCmd getPosCmd = new GetPosCmd();

@@ -1,0 +1,7 @@
+#
+#waypoint:name:initials:x:y:z:color:disabled:type:set:rotate_on_tp:tp_yaw:visibility_type:destination
+#
+waypoint:portal§§ nothing? pin out tmp:P:-100:130:-497:11:false:0:gui.xaero_default:false:0:0:false
+waypoint:portal§§ cheese:P:155:77:-464:2:false:0:gui.xaero_default:false:0:0:false
+waypoint:portal§§ base:P:-50:52:-434:6:false:0:gui.xaero_default:false:0:0:false
+waypoint:exit:E:-381:129:458:2:false:0:gui.xaero_default:false:0:0:false

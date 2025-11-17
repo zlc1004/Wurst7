@@ -50,6 +50,7 @@ public final class ExplorationHack extends Hack implements UpdateListener
 	private boolean isMovingRight = true; // Direction of horizontal movement
 	private int currentZ;
 	private boolean isExploring = false;
+	private boolean isPaused = false;
 	private int startXInt, startZInt, endXInt, endZInt, exploreHeightInt,
 		pathWidthInt;
 	
@@ -70,10 +71,28 @@ public final class ExplorationHack extends Hack implements UpdateListener
 	@Override
 	public String getRenderName()
 	{
+		String name = "Exploration";
+		
 		if(isExploring && currentTarget != null)
-			return "Exploration [" + currentTarget.getX() + ", "
-				+ currentTarget.getZ() + "]";
-		return "Exploration";
+		{
+			// Calculate progress percentage
+			double totalZDistance = Math.abs(endZInt - startZInt);
+			double currentZDistance = Math.abs(currentZ - startZInt);
+			double progress =
+				totalZDistance > 0 ? currentZDistance / totalZDistance : 0;
+			int percentage = (int)(progress * 100);
+			
+			if(isPaused)
+			{
+				name += " " + percentage + "%, paused";
+			}else
+			{
+				name += " [" + currentTarget.getX() + ", "
+					+ currentTarget.getZ() + "] " + percentage + "%";
+			}
+		}
+		
+		return name;
 	}
 	
 	@Override
@@ -117,6 +136,8 @@ public final class ExplorationHack extends Hack implements UpdateListener
 		EVENTS.add(UpdateListener.class, this);
 		ChatUtils.message("Starting exploration from [" + startXInt + ", "
 			+ startZInt + "] to [" + endXInt + ", " + endZInt + "]");
+		ChatUtils.message("First target: [" + currentTarget.getX() + ", "
+			+ currentTarget.getY() + ", " + currentTarget.getZ() + "]");
 	}
 	
 	@Override
@@ -152,6 +173,19 @@ public final class ExplorationHack extends Hack implements UpdateListener
 			return;
 		}
 		
+		// If paused, stop all movement but keep the hack enabled
+		if(isPaused)
+		{
+			// Reset all movement keys when paused
+			MC.options.forwardKey.setPressed(false);
+			MC.options.backKey.setPressed(false);
+			MC.options.leftKey.setPressed(false);
+			MC.options.rightKey.setPressed(false);
+			MC.options.jumpKey.setPressed(false);
+			MC.options.sneakKey.setPressed(false);
+			return;
+		}
+		
 		// Move towards current target
 		moveTowards(currentTarget);
 		
@@ -163,6 +197,9 @@ public final class ExplorationHack extends Hack implements UpdateListener
 			if(nextTarget != null)
 			{
 				currentTarget = nextTarget;
+				ChatUtils.message("Moving to next target: ["
+					+ currentTarget.getX() + ", " + currentTarget.getY() + ", "
+					+ currentTarget.getZ() + "]");
 			}else
 			{
 				ChatUtils.message("Exploration completed!");
@@ -218,7 +255,7 @@ public final class ExplorationHack extends Hack implements UpdateListener
 		double horizontalDistance =
 			Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 		
-		return horizontalDistance < 2.0; // Within 2 blocks of target
+		return horizontalDistance < 3.0; // Within 3 blocks of target
 	}
 	
 	private BlockPos calculateNextTarget()
@@ -226,9 +263,18 @@ public final class ExplorationHack extends Hack implements UpdateListener
 		int currentTargetX = currentTarget.getX();
 		int currentTargetZ = currentTarget.getZ();
 		
+		// Check if we're at the start position and need to go to end of first
+		// line
+		if(currentTargetX == startXInt && currentTargetZ == startZInt
+			&& isMovingRight)
+		{
+			// Move to the end of the first line
+			return new BlockPos(endXInt, exploreHeightInt, currentZ);
+		}
+		
 		// If we're at the end of a horizontal line
-		if((isMovingRight && currentTargetX >= endXInt)
-			|| (!isMovingRight && currentTargetX <= endXInt))
+		if((isMovingRight && currentTargetX == endXInt)
+			|| (!isMovingRight && currentTargetX == startXInt))
 		{
 			// Move to next Z line
 			if(endZInt > startZInt)
@@ -251,9 +297,9 @@ public final class ExplorationHack extends Hack implements UpdateListener
 			return new BlockPos(nextX, exploreHeightInt, currentZ);
 		}else
 		{
-			// Continue in current direction
+			// Continue in current direction to the end of the line
 			int nextX = isMovingRight ? endXInt : startXInt;
-			return new BlockPos(nextX, exploreHeightInt, currentTargetZ);
+			return new BlockPos(nextX, exploreHeightInt, currentZ);
 		}
 	}
 	
@@ -263,5 +309,26 @@ public final class ExplorationHack extends Hack implements UpdateListener
 			return currentZ > endZInt;
 		else
 			return currentZ < endZInt;
+	}
+	
+	public boolean isPaused()
+	{
+		return isPaused;
+	}
+	
+	public void setPaused(boolean paused)
+	{
+		this.isPaused = paused;
+		
+		// Stop all movement when pausing
+		if(paused)
+		{
+			MC.options.forwardKey.setPressed(false);
+			MC.options.backKey.setPressed(false);
+			MC.options.leftKey.setPressed(false);
+			MC.options.rightKey.setPressed(false);
+			MC.options.jumpKey.setPressed(false);
+			MC.options.sneakKey.setPressed(false);
+		}
 	}
 }

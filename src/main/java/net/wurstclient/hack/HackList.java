@@ -102,6 +102,7 @@ public final class HackList implements UpdateListener
 	public final CrystalAuraHack crystalAuraHack = new CrystalAuraHack();
 	public final DerpHack derpHack = new DerpHack();
 	public final DolphinHack dolphinHack = new DolphinHack();
+	public final DragonAimBotHack dragonAimBotHack = new DragonAimBotHack();
 	public final ExcavatorHack excavatorHack = new ExcavatorHack();
 	public final ExplorationHack explorationHack = new ExplorationHack();
 	public final ExtraElytraHack extraElytraHack = new ExtraElytraHack();
@@ -111,6 +112,7 @@ public final class HackList implements UpdateListener
 	public final FastPlaceHack fastPlaceHack = new FastPlaceHack();
 	public final FeedAuraHack feedAuraHack = new FeedAuraHack();
 	public final FightBotHack fightBotHack = new FightBotHack();
+	public final FillerHack fillerHack = new FillerHack();
 	public final FishHack fishHack = new FishHack();
 	public final FlightHack flightHack = new FlightHack();
 	public final FollowHack followHack = new FollowHack();
@@ -150,6 +152,7 @@ public final class HackList implements UpdateListener
 	public final MultiAuraHack multiAuraHack = new MultiAuraHack();
 	public final NameProtectHack nameProtectHack = new NameProtectHack();
 	public final NameTagsHack nameTagsHack = new NameTagsHack();
+	public final NBTViewerHack nbtViewerHack = new NBTViewerHack();
 	public final NavigatorHack navigatorHack = new NavigatorHack();
 	public final NewChunksHack newChunksHack = new NewChunksHack();
 	public final NoBackgroundHack noBackgroundHack = new NoBackgroundHack();
@@ -197,6 +200,8 @@ public final class HackList implements UpdateListener
 	public final SnowShoeHack snowShoeHack = new SnowShoeHack();
 	public final SpeedHackHack speedHackHack = new SpeedHackHack();
 	public final SpeedNukerHack speedNukerHack = new SpeedNukerHack();
+	public final SpawnerPlayerEspHack spawnerPlayerEspHack =
+		new SpawnerPlayerEspHack();
 	public final SpiderHack spiderHack = new SpiderHack();
 	public final StepHack stepHack = new StepHack();
 	public final TemplateToolHack templateToolHack = new TemplateToolHack();
