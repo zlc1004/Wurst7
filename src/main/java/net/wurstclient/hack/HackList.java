@@ -105,6 +105,8 @@ public final class HackList implements UpdateListener
 	public final DragonAimBotHack dragonAimBotHack = new DragonAimBotHack();
 	public final ExcavatorHack excavatorHack = new ExcavatorHack();
 	public final ExplorationHack explorationHack = new ExplorationHack();
+	public final InfiniteExplorerHack infiniteExplorerHack =
+		new InfiniteExplorerHack();
 	public final ExtraElytraHack extraElytraHack = new ExtraElytraHack();
 	public final FancyChatHack fancyChatHack = new FancyChatHack();
 	public final FastBreakHack fastBreakHack = new FastBreakHack();
@@ -128,6 +130,7 @@ public final class HackList implements UpdateListener
 	public final HealthTagsHack healthTagsHack = new HealthTagsHack();
 	public final HighJumpHack highJumpHack = new HighJumpHack();
 	public final InfiniChatHack infiniChatHack = new InfiniChatHack();
+	public final InvisReminderHack invisReminderHack = new InvisReminderHack();
 	public final InstaBuildHack instaBuildHack = new InstaBuildHack();
 	public final InstantBunkerHack instantBunkerHack = new InstantBunkerHack();
 	public final InvWalkHack invWalkHack = new InvWalkHack();
