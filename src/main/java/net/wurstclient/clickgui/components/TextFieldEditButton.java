@@ -12,7 +12,6 @@ import java.util.Objects;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Style;
 import net.wurstclient.clickgui.ClickGui;
@@ -38,8 +37,7 @@ public final class TextFieldEditButton extends Component
 	}
 	
 	@Override
-	public void handleMouseClick(double mouseX, double mouseY, int mouseButton,
-		Click context)
+	public void handleMouseClick(double mouseX, double mouseY, int mouseButton)
 	{
 		if(mouseY < getY() + TEXT_HEIGHT)
 			return;
@@ -89,7 +87,6 @@ public final class TextFieldEditButton extends Component
 		
 		// text
 		int txtColor = GUI.getTxtColor();
-		context.state.goUpLayer();
 		context.drawText(TR, setting.getName(), x1, y1 + 2, txtColor, false);
 		String value = setting.getValue();
 		int maxWidth = getWidth() - TR.getWidth("...") - 2;

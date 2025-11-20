@@ -164,7 +164,7 @@ public final class InstaBuildHack extends Hack
 	private void buildInstantly()
 	{
 		PlayerInventory inventory = MC.player.getInventory();
-		int oldSlot = inventory.getSelectedSlot();
+		int oldSlot = inventory.selectedSlot;
 		
 		for(Map.Entry<BlockPos, Item> entry : remainingBlocks.entrySet())
 		{
@@ -186,7 +186,7 @@ public final class InstaBuildHack extends Hack
 				SwingHand.OFF);
 		}
 		
-		inventory.setSelectedSlot(oldSlot);
+		inventory.selectedSlot = oldSlot;
 		remainingBlocks.clear();
 	}
 	
@@ -201,7 +201,7 @@ public final class InstaBuildHack extends Hack
 		PlayerInventory inventory = MC.player.getInventory();
 		int slot = inventory.getEmptySlot();
 		if(!PlayerInventory.isValidHotbarIndex(slot))
-			slot = inventory.getSelectedSlot();
+			slot = inventory.selectedSlot;
 		
 		ItemStack stack = new ItemStack(item);
 		InventoryUtils.setCreativeStack(slot, stack);

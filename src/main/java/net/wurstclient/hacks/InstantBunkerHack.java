@@ -62,7 +62,7 @@ public final class InstantBunkerHack extends Hack implements UpdateListener
 			return;
 		}
 		
-		ItemStack stack = MC.player.getInventory().getSelectedStack();
+		ItemStack stack = MC.player.getInventory().getMainHandStack();
 		
 		if(!(stack.getItem() instanceof BlockItem))
 		{
@@ -71,11 +71,11 @@ public final class InstantBunkerHack extends Hack implements UpdateListener
 			return;
 		}
 		
-		if(stack.getCount() < 57 && !MC.player.getAbilities().creativeMode)
+		if(stack.getCount() < 57 && !MC.player.isCreative())
 			ChatUtils.warning("Not enough blocks. Bunker may be incomplete.");
 		
 		// get start pos and facings
-		BlockPos startPos = BlockPos.ofFloored(MC.player.getEntityPos());
+		BlockPos startPos = BlockPos.ofFloored(MC.player.getPos());
 		Direction facing = MC.player.getHorizontalFacing();
 		Direction facing2 = facing.rotateYCounterclockwise();
 		

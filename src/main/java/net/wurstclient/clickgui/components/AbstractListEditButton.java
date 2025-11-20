@@ -10,7 +10,6 @@ package net.wurstclient.clickgui.components;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.wurstclient.clickgui.ClickGui;
 import net.wurstclient.clickgui.Component;
@@ -32,8 +31,7 @@ public abstract class AbstractListEditButton extends Component
 	protected abstract Setting getSetting();
 	
 	@Override
-	public void handleMouseClick(double mouseX, double mouseY, int mouseButton,
-		Click context)
+	public void handleMouseClick(double mouseX, double mouseY, int mouseButton)
 	{
 		if(mouseButton != GLFW.GLFW_MOUSE_BUTTON_LEFT)
 			return;
@@ -71,7 +69,6 @@ public abstract class AbstractListEditButton extends Component
 		
 		// text
 		int txtColor = GUI.getTxtColor();
-		context.state.goUpLayer();
 		context.drawText(TR, getText(), x1, y1 + 2, txtColor, false);
 		context.drawText(TR, buttonText, x3 + 2, y1 + 2, txtColor, false);
 	}

@@ -18,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 
 import com.google.gson.JsonElement;
@@ -27,8 +26,8 @@ import com.google.gson.JsonParser;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.wurstclient.Category;
 import net.wurstclient.Feature;
@@ -192,11 +191,8 @@ public final class ClickGui
 		}
 	}
 	
-	public void handleMouseClick(Click context)
+	public void handleMouseClick(int mouseX, int mouseY, int mouseButton)
 	{
-		int mouseX = (int)context.x();
-		int mouseY = (int)context.y();
-		int mouseButton = context.button();
 		if(mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT)
 			leftMouseButtonPressed = true;
 		
@@ -204,7 +200,7 @@ public final class ClickGui
 			handlePopupMouseClick(mouseX, mouseY, mouseButton);
 		
 		if(!popupClicked)
-			handleWindowMouseClick(mouseX, mouseY, mouseButton, context);
+			handleWindowMouseClick(mouseX, mouseY, mouseButton);
 		
 		for(Popup popup : popups)
 			if(popup.getOwner().getParent().isClosing())
@@ -269,13 +265,12 @@ public final class ClickGui
 	}
 	
 	public void handleNavigatorMouseClick(double cMouseX, double cMouseY,
-		int mouseButton, Window window, Click context)
+		int mouseButton, Window window)
 	{
 		if(mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT)
 			leftMouseButtonPressed = true;
 		
-		handleComponentMouseClick(window, cMouseX, cMouseY, mouseButton,
-			context);
+		handleComponentMouseClick(window, cMouseX, cMouseY, mouseButton);
 		
 		for(Popup popup : popups)
 			if(popup.getOwner().getParent().isClosing())
@@ -319,8 +314,7 @@ public final class ClickGui
 		return false;
 	}
 	
-	private void handleWindowMouseClick(int mouseX, int mouseY, int mouseButton,
-		Click context)
+	private void handleWindowMouseClick(int mouseX, int mouseY, int mouseButton)
 	{
 		for(int i = windows.size() - 1; i >= 0; i--)
 		{
@@ -357,7 +351,7 @@ public final class ClickGui
 						cMouseY -= window.getScrollOffset();
 					
 					handleComponentMouseClick(window, cMouseX, cMouseY,
-						mouseButton, context);
+						mouseButton);
 				}
 				
 			}else
@@ -442,7 +436,7 @@ public final class ClickGui
 	}
 	
 	private void handleComponentMouseClick(Window window, double mouseX,
-		double mouseY, int mouseButton, Click context)
+		double mouseY, int mouseButton)
 	{
 		for(int i2 = window.countChildren() - 1; i2 >= 0; i2--)
 		{
@@ -454,7 +448,7 @@ public final class ClickGui
 				|| mouseY >= c.getY() + c.getHeight())
 				continue;
 			
-			c.handleMouseClick(mouseX, mouseY, mouseButton, context);
+			c.handleMouseClick(mouseX, mouseY, mouseButton);
 			break;
 		}
 	}
@@ -464,8 +458,8 @@ public final class ClickGui
 	{
 		updateColors();
 		
-		Matrix3x2fStack matrixStack = context.getMatrices();
-		matrixStack.pushMatrix();
+		MatrixStack matrixStack = context.getMatrices();
+		matrixStack.push();
 		
 		tooltip = "";
 		for(Window window : windows)
@@ -490,19 +484,19 @@ public final class ClickGui
 				else
 					window.stopDraggingScrollbar();
 				
-			context.state.goUpLayer();
+			matrixStack.translate(0, 0, 300);
 			renderWindow(context, window, mouseX, mouseY, partialTicks);
 		}
 		
 		renderPopups(context, mouseX, mouseY);
 		renderTooltip(context, mouseX, mouseY);
 		
-		matrixStack.popMatrix();
+		matrixStack.pop();
 	}
 	
 	public void renderPopups(DrawContext context, int mouseX, int mouseY)
 	{
-		Matrix3x2fStack matrixStack = context.getMatrices();
+		MatrixStack matrixStack = context.getMatrices();
 		for(Popup popup : popups)
 		{
 			Component owner = popup.getOwner();
@@ -512,20 +506,21 @@ public final class ClickGui
 			int y1 =
 				parent.getY() + 13 + parent.getScrollOffset() + owner.getY();
 			
-			matrixStack.pushMatrix();
-			matrixStack.translate(x1, y1);
-			context.state.goUpLayer();
+			matrixStack.push();
+			matrixStack.translate(x1, y1, 300);
 			
 			int cMouseX = mouseX - x1;
 			int cMouseY = mouseY - y1;
 			popup.render(context, cMouseX, cMouseY);
 			
-			matrixStack.popMatrix();
+			matrixStack.pop();
 		}
 	}
 	
 	public void renderTooltip(DrawContext context, int mouseX, int mouseY)
 	{
+		MatrixStack matrixStack = context.getMatrices();
+		
 		if(tooltip.isEmpty())
 			return;
 		
@@ -548,7 +543,8 @@ public final class ClickGui
 		int yt1 = mouseY + th - 2 <= sh ? mouseY - 4 : mouseY - th - 4;
 		int yt2 = yt1 + th + 2;
 		
-		context.state.goUpLayer();
+		matrixStack.push();
+		matrixStack.translate(0, 0, 300);
 		
 		// background
 		context.fill(xt1, yt1, xt2, yt2,
@@ -559,23 +555,27 @@ public final class ClickGui
 			RenderUtils.toIntColor(acColor, 0.5F));
 		
 		// text
-		context.state.goUpLayer();
 		for(int i = 0; i < lines.length; i++)
 			context.drawText(tr, lines[i], xt1 + 2, yt1 + 2 + i * tr.fontHeight,
 				txtColor, false);
+		
+		matrixStack.pop();
 	}
 	
 	public void renderPinnedWindows(DrawContext context, float partialTicks)
 	{
+		MatrixStack matrixStack = context.getMatrices();
+		matrixStack.push();
+		
 		for(Window window : windows)
-		{
-			if(!window.isPinned() || window.isInvisible())
-				continue;
-			
-			context.state.goUpLayer();
-			renderWindow(context, window, Integer.MIN_VALUE, Integer.MIN_VALUE,
-				partialTicks);
-		}
+			if(window.isPinned() && !window.isInvisible())
+			{
+				matrixStack.translate(0, 0, 300);
+				renderWindow(context, window, Integer.MIN_VALUE,
+					Integer.MIN_VALUE, partialTicks);
+			}
+		
+		matrixStack.pop();
 	}
 	
 	public void updateColors()
@@ -607,7 +607,7 @@ public final class ClickGui
 		int windowBgColor = RenderUtils.toIntColor(bgColor, opacity);
 		int outlineColor = RenderUtils.toIntColor(acColor, 0.5F);
 		
-		Matrix3x2fStack matrixStack = context.getMatrices();
+		MatrixStack matrixStack = context.getMatrices();
 		
 		if(window.isMinimized())
 			y2 = y3;
@@ -671,8 +671,8 @@ public final class ClickGui
 			
 			context.enableScissor(x1, y3, x2, y2);
 			
-			matrixStack.pushMatrix();
-			matrixStack.translate(x1, y4);
+			matrixStack.push();
+			matrixStack.translate(x1, y4, 0);
 			
 			// window background
 			// between children
@@ -706,7 +706,7 @@ public final class ClickGui
 				window.getChild(i).render(context, cMouseX, cMouseY,
 					partialTicks);
 			
-			matrixStack.popMatrix();
+			matrixStack.pop();
 			context.disableScissor();
 		}
 		
@@ -765,7 +765,6 @@ public final class ClickGui
 		TextRenderer tr = MC.textRenderer;
 		String title = tr.trimToWidth(Text.literal(window.getTitle()), x3 - x1)
 			.getString();
-		context.state.goUpLayer();
 		context.drawText(tr, title, x1 + 2, y1 + 3, txtColor, false);
 	}
 	

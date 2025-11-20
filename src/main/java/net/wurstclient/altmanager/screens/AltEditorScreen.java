@@ -16,17 +16,14 @@ import java.nio.file.StandardCopyOption;
 
 import org.lwjgl.glfw.GLFW;
 
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Util;
 import net.wurstclient.WurstClient;
 import net.wurstclient.altmanager.AltRenderer;
@@ -68,9 +65,12 @@ public abstract class AltEditorScreen extends Screen
 		passwordBox = new TextFieldWidget(textRenderer, width / 2 - 100, 100,
 			200, 20, Text.literal(""));
 		passwordBox.setText(getDefaultPassword());
-		passwordBox.addFormatter(
-			(text, startIndex) -> OrderedText.styledForwardsVisitedString(
-				"*".repeat(text.length()), Style.EMPTY));
+		passwordBox.setRenderTextProvider((text, int_1) -> {
+			String stars = "";
+			for(int i = 0; i < text.length(); i++)
+				stars += "*";
+			return OrderedText.styledForwardsVisitedString(stars, Style.EMPTY);
+		});
 		passwordBox.setMaxLength(256);
 		addSelectableChild(passwordBox);
 		
@@ -202,36 +202,38 @@ public abstract class AltEditorScreen extends Screen
 	}
 	
 	@Override
-	public boolean keyPressed(KeyInput context)
+	public boolean keyPressed(int keyCode, int scanCode, int int_3)
 	{
-		if(context.key() == GLFW.GLFW_KEY_ENTER)
-			doneButton.onPress(context);
+		if(keyCode == GLFW.GLFW_KEY_ENTER)
+			doneButton.onPress();
 		
-		return super.keyPressed(context);
+		return super.keyPressed(keyCode, scanCode, int_3);
 	}
 	
 	@Override
-	public boolean mouseClicked(Click context, boolean doubleClick)
+	public boolean mouseClicked(double x, double y, int button)
 	{
-		nameOrEmailBox.mouseClicked(context, doubleClick);
-		passwordBox.mouseClicked(context, doubleClick);
+		nameOrEmailBox.mouseClicked(x, y, button);
+		passwordBox.mouseClicked(x, y, button);
 		
 		if(nameOrEmailBox.isFocused() || passwordBox.isFocused())
 			message = "";
 		
-		if(context.button() == GLFW.GLFW_MOUSE_BUTTON_4)
+		if(button == GLFW.GLFW_MOUSE_BUTTON_4)
 		{
 			close();
 			return true;
 		}
 		
-		return super.mouseClicked(context, doubleClick);
+		return super.mouseClicked(x, y, button);
 	}
 	
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
+		renderBackground(context, mouseX, mouseY, partialTicks);
+		
 		// skin preview
 		AltRenderer.drawAltBack(context, nameOrEmailBox.getText(),
 			(width / 2 - 100) / 2 - 64, height / 2 - 128, 128, 256);
@@ -242,18 +244,18 @@ public abstract class AltEditorScreen extends Screen
 		
 		// text
 		context.drawTextWithShadow(textRenderer, "Name (for cracked alts), or",
-			width / 2 - 100, 37, Colors.LIGHT_GRAY);
+			width / 2 - 100, 37, 10526880);
 		context.drawTextWithShadow(textRenderer, "E-Mail (for premium alts)",
-			width / 2 - 100, 47, Colors.LIGHT_GRAY);
+			width / 2 - 100, 47, 10526880);
 		context.drawTextWithShadow(textRenderer, "Password (for premium alts)",
-			width / 2 - 100, 87, Colors.LIGHT_GRAY);
+			width / 2 - 100, 87, 10526880);
 		context.drawTextWithShadow(textRenderer, "Account type: " + accountType,
-			width / 2 - 100, 127, Colors.LIGHT_GRAY);
+			width / 2 - 100, 127, 10526880);
 		
 		String[] lines = message.split("\n");
 		for(int i = 0; i < lines.length; i++)
 			context.drawCenteredTextWithShadow(textRenderer, lines[i],
-				width / 2, 142 + 10 * i, Colors.WHITE);
+				width / 2, 142 + 10 * i, 16777215);
 		
 		// text boxes
 		nameOrEmailBox.render(context, mouseX, mouseY, partialTicks);

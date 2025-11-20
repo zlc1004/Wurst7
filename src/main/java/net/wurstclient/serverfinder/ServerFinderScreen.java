@@ -10,23 +10,21 @@ package net.wurstclient.serverfinder;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-
 import org.lwjgl.glfw.GLFW;
 
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.network.ServerInfo.ServerType;
 import net.minecraft.client.option.ServerList;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
-import net.minecraft.util.Util;
 import net.wurstclient.util.MathUtils;
 
 public class ServerFinderScreen extends Screen
@@ -34,13 +32,20 @@ public class ServerFinderScreen extends Screen
 	private final MultiplayerScreen prevScreen;
 	
 	private TextFieldWidget ipBox;
+	private TextFieldWidget motdBox;
+	private TextFieldWidget minPlayersBox;
+	private TextFieldWidget maxPlayersBox;
 	private TextFieldWidget maxThreadsBox;
+	private CheckboxWidget crackedBox;
 	private ButtonWidget searchButton;
 	
-	private ServerFinderState state;
 	private int maxThreads;
 	private int checked;
 	private int working;
+	
+	private ServerFinderState state;
+	private int serversFound;
+	private String lastError;
 	
 	public ServerFinderScreen(MultiplayerScreen prevScreen)
 	{
@@ -60,7 +65,7 @@ public class ServerFinderScreen extends Screen
 		addDrawableChild(
 			ButtonWidget
 				.builder(Text.literal("Tutorial"),
-					b -> Util.getOperatingSystem().open(
+					b -> net.minecraft.util.Util.getOperatingSystem().open(
 						"https://www.wurstclient.net/serverfinder-tutorial/"))
 				.dimensions(width / 2 - 100, height / 4 + 120 + 12, 200, 20)
 				.build());
@@ -210,21 +215,23 @@ public class ServerFinderScreen extends Screen
 	}
 	
 	@Override
-	public boolean mouseClicked(Click context, boolean doubleClick)
+	public boolean mouseClicked(double mouseX, double mouseY, int button)
 	{
-		if(context.button() == GLFW.GLFW_MOUSE_BUTTON_4)
+		if(button == GLFW.GLFW_MOUSE_BUTTON_4)
 		{
 			close();
 			return true;
 		}
 		
-		return super.mouseClicked(context, doubleClick);
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 	
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
+		renderBackground(context, mouseX, mouseY, partialTicks);
+		
 		context.drawCenteredTextWithShadow(textRenderer, "Server Finder",
 			width / 2, 20, Colors.WHITE);
 		context.drawCenteredTextWithShadow(textRenderer,

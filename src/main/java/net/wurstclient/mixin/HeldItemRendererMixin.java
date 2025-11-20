@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
@@ -24,19 +24,13 @@ import net.wurstclient.WurstClient;
 @Mixin(HeldItemRenderer.class)
 public abstract class HeldItemRendererMixin
 {
-	/**
-	 * This mixin is injected into the `BLOCK` case of the `item.getUseAction()`
-	 * switch.
-	 */
-	@Inject(at = @At(value = "INVOKE",
+	@Inject(at = {@At(value = "INVOKE",
 		target = "Lnet/minecraft/client/render/item/HeldItemRenderer;applyEquipOffset(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/Arm;F)V",
-		ordinal = 3),
-		method = "renderFirstPersonItem(Lnet/minecraft/client/network/AbstractClientPlayerEntity;FFLnet/minecraft/util/Hand;FLnet/minecraft/item/ItemStack;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;I)V")
+		ordinal = 4)}, method = "renderFirstPersonItem")
 	private void onApplyEquipOffsetBlocking(AbstractClientPlayerEntity player,
-		float tickProgress, float pitch, Hand hand, float swingProgress,
+		float tickDelta, float pitch, Hand hand, float swingProgress,
 		ItemStack item, float equipProgress, MatrixStack matrices,
-		OrderedRenderCommandQueue entityRenderCommandQueue, int light,
-		CallbackInfo ci)
+		VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci)
 	{
 		// lower shield when blocking
 		if(item.getItem() == Items.SHIELD)
@@ -44,19 +38,13 @@ public abstract class HeldItemRendererMixin
 				.adjustShieldPosition(matrices, true);
 	}
 	
-	/**
-	 * This mixin is injected into the last `else` block of
-	 * renderFirstPersonItem(), right after `else if(player.isUsingRiptide())`.
-	 */
-	@Inject(at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/client/render/item/HeldItemRenderer;swingArm(FFLnet/minecraft/client/util/math/MatrixStack;ILnet/minecraft/util/Arm;)V",
-		ordinal = 2),
-		method = "renderFirstPersonItem(Lnet/minecraft/client/network/AbstractClientPlayerEntity;FFLnet/minecraft/util/Hand;FLnet/minecraft/item/ItemStack;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;I)V")
+	@Inject(at = {@At(value = "INVOKE",
+		target = "Lnet/minecraft/client/render/item/HeldItemRenderer;applySwingOffset(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/Arm;F)V",
+		ordinal = 1)}, method = "renderFirstPersonItem")
 	private void onApplySwingOffsetNotBlocking(
-		AbstractClientPlayerEntity player, float tickProgress, float pitch,
+		AbstractClientPlayerEntity player, float tickDelta, float pitch,
 		Hand hand, float swingProgress, ItemStack item, float equipProgress,
-		MatrixStack matrices,
-		OrderedRenderCommandQueue entityRenderCommandQueue, int light,
+		MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
 		CallbackInfo ci)
 	{
 		// lower shield when not blocking

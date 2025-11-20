@@ -58,7 +58,7 @@ public final class ZoomOtf extends OtherFeature implements MouseScrollListener
 		EVENTS.add(MouseScrollListener.class, this);
 	}
 	
-	public float changeFovBasedOnZoom(float fov)
+	public double changeFovBasedOnZoom(double fov)
 	{
 		SimpleOption<Double> mouseSensitivitySetting =
 			MC.options.getMouseSensitivity();
@@ -88,7 +88,7 @@ public final class ZoomOtf extends OtherFeature implements MouseScrollListener
 		mouseSensitivitySetting
 			.setValue(defaultMouseSensitivity * (1.0 / currentLevel));
 		
-		return (float)(fov / currentLevel);
+		return fov / currentLevel;
 	}
 	
 	@Override
@@ -130,7 +130,7 @@ public final class ZoomOtf extends OtherFeature implements MouseScrollListener
 		if(MC.currentScreen != null && !zoomInScreens.isChecked())
 			return false;
 		
-		return InputUtil.isKeyPressed(MC.getWindow(),
+		return InputUtil.isKeyPressed(MC.getWindow().getHandle(),
 			InputUtil.fromTranslationKey(keybind.getValue()).getCode());
 	}
 	

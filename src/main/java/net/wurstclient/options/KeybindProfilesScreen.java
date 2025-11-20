@@ -22,12 +22,9 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Util;
 import net.wurstclient.WurstClient;
-import net.wurstclient.util.WurstColors;
 import net.wurstclient.util.json.JsonException;
 
 public final class KeybindProfilesScreen extends Screen
@@ -113,14 +110,14 @@ public final class KeybindProfilesScreen extends Screen
 	}
 	
 	@Override
-	public boolean keyPressed(KeyInput context)
+	public boolean keyPressed(int keyCode, int scanCode, int int_3)
 	{
-		if(context.key() == GLFW.GLFW_KEY_ENTER)
+		if(keyCode == GLFW.GLFW_KEY_ENTER)
 			loadSelected();
-		else if(context.key() == GLFW.GLFW_KEY_ESCAPE)
+		else if(keyCode == GLFW.GLFW_KEY_ESCAPE)
 			client.setScreen(prevScreen);
 		
-		return super.keyPressed(context);
+		return super.keyPressed(keyCode, scanCode, int_3);
 	}
 	
 	@Override
@@ -133,10 +130,11 @@ public final class KeybindProfilesScreen extends Screen
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
+		renderBackground(context, mouseX, mouseY, partialTicks);
 		listGui.render(context, mouseX, mouseY, partialTicks);
 		
 		context.drawCenteredTextWithShadow(client.textRenderer,
-			"Keybind Profiles", width / 2, 12, Colors.WHITE);
+			"Keybind Profiles", width / 2, 12, 0xffffff);
 		
 		for(Drawable drawable : drawables)
 			drawable.render(context, mouseX, mouseY, partialTicks);
@@ -171,21 +169,17 @@ public final class KeybindProfilesScreen extends Screen
 		}
 		
 		@Override
-		public void render(DrawContext context, int mouseX, int mouseY,
+		public void render(DrawContext context, int index, int y, int x,
+			int entryWidth, int entryHeight, int mouseX, int mouseY,
 			boolean hovered, float tickDelta)
 		{
-			int x = getContentX();
-			int y = getContentY();
-			
 			TextRenderer tr = client.textRenderer;
 			
 			String fileName = "" + path.getFileName();
-			context.drawTextWithShadow(tr, fileName, x + 28, y,
-				WurstColors.VERY_LIGHT_GRAY);
+			context.drawTextWithShadow(tr, fileName, x + 28, y, 0xF0F0F0);
 			
 			String relPath = "" + client.runDirectory.toPath().relativize(path);
-			context.drawTextWithShadow(tr, relPath, x + 28, y + 9,
-				Colors.LIGHT_GRAY);
+			context.drawTextWithShadow(tr, relPath, x + 28, y + 9, 0xA0A0A0);
 		}
 	}
 	

@@ -9,6 +9,8 @@ package net.wurstclient.hacks.newchunks;
 
 import java.util.function.Consumer;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -35,7 +37,7 @@ public final class NewChunksRenderer
 		this.oldChunksColor = oldChunksColor;
 	}
 	
-	public void updateBuffer(int i, RenderLayer.MultiPhase layer,
+	public void updateBuffer(int i, RenderLayer layer,
 		Consumer<VertexConsumer> callback)
 	{
 		vertexBuffers[i] = BufferWithLayer.createAndUpload(layer, callback);
@@ -71,14 +73,18 @@ public final class NewChunksRenderer
 			if(i == 0 || i == 2)
 				matrixStack.translate(0, altitudeD, 0);
 			
-			float[] rgb =
-				i < 2 ? newChunksColor.getColorF() : oldChunksColor.getColorF();
+			if(i < 2)
+				newChunksColor.setAsShaderColor(alpha);
+			else
+				oldChunksColor.setAsShaderColor(alpha);
 			
-			buffer.draw(matrixStack, rgb, alpha);
+			buffer.draw(matrixStack);
 			
 			matrixStack.pop();
 		}
 		
 		matrixStack.pop();
+		
+		RenderSystem.setShaderColor(1, 1, 1, 1);
 	}
 }

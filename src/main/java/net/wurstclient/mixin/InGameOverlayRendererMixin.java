@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.InGameOverlayRenderer;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.wurstclient.WurstClient;
 
@@ -24,7 +23,7 @@ import net.wurstclient.WurstClient;
 public class InGameOverlayRendererMixin
 {
 	@ModifyConstant(
-		method = "renderFireOverlay(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/texture/Sprite;)V",
+		method = "renderFireOverlay(Lnet/minecraft/client/MinecraftClient;Lnet/minecraft/client/util/math/MatrixStack;)V",
 		constant = @Constant(floatValue = -0.3F))
 	private static float getFireOffset(float original)
 	{
@@ -33,11 +32,10 @@ public class InGameOverlayRendererMixin
 	}
 	
 	@Inject(at = @At("HEAD"),
-		method = "renderUnderwaterOverlay(Lnet/minecraft/client/MinecraftClient;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;)V",
+		method = "renderUnderwaterOverlay(Lnet/minecraft/client/MinecraftClient;Lnet/minecraft/client/util/math/MatrixStack;)V",
 		cancellable = true)
 	private static void onRenderUnderwaterOverlay(MinecraftClient client,
-		MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider,
-		CallbackInfo ci)
+		MatrixStack matrices, CallbackInfo ci)
 	{
 		if(WurstClient.INSTANCE.getHax().noOverlayHack.isEnabled())
 			ci.cancel();

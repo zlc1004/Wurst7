@@ -32,14 +32,14 @@ public final class ViewNbtCmd extends Command
 	public void call(String[] args) throws CmdException
 	{
 		ClientPlayerEntity player = MC.player;
-		ItemStack stack = player.getInventory().getSelectedStack();
+		ItemStack stack = player.getInventory().getMainHandStack();
 		if(stack.isEmpty())
 			throw new CmdError("You must hold an item in your main hand.");
 		
 		NbtCompound tag = stack
 			.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT)
 			.copyNbt();
-		String nbtString = tag.toString();
+		String nbtString = tag.asString();
 		
 		switch(String.join(" ", args).toLowerCase())
 		{

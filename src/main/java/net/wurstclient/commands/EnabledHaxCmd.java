@@ -26,10 +26,8 @@ public final class EnabledHaxCmd extends Command
 {
 	public EnabledHaxCmd()
 	{
-		super("enabledhax", "Allows you to make profiles of enabled hacks.",
-			".enabledhax load-profile <file>",
-			".enabledhax save-profile <file>",
-			".enabledhax list-profiles [<page>]",
+		super("h", "Allows you to make profiles of enabled hacks.",
+			".h save <file>", ".h load <file>", ".h list [<page>]",
 			"Profiles are saved in '.minecraft/wurst/enabled hacks'.");
 	}
 	
@@ -41,15 +39,15 @@ public final class EnabledHaxCmd extends Command
 		
 		switch(args[0].toLowerCase())
 		{
-			case "load-profile":
+			case "load":
 			loadProfile(args);
 			break;
 			
-			case "save-profile":
+			case "save":
 			saveProfile(args);
 			break;
 			
-			case "list-profiles":
+			case "list":
 			listProfiles(args);
 			break;
 			
@@ -135,8 +133,8 @@ public final class EnabledHaxCmd extends Command
 		int start = (page - 1) * 8;
 		int end = Math.min(page * 8, files.size());
 		
-		ChatUtils.message(
-			"Enabled hacks profile list (page " + page + "/" + pages + ")");
+		ChatUtils
+			.message("Hack profile list (page " + page + "/" + pages + ")");
 		for(int i = start; i < end; i++)
 			ChatUtils.message(files.get(i).getFileName().toString());
 	}

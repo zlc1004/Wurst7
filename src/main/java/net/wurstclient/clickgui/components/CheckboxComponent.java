@@ -10,7 +10,6 @@ package net.wurstclient.clickgui.components;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.wurstclient.clickgui.ClickGui;
 import net.wurstclient.clickgui.ClickGuiIcons;
@@ -34,8 +33,7 @@ public final class CheckboxComponent extends Component
 	}
 	
 	@Override
-	public void handleMouseClick(double mouseX, double mouseY, int mouseButton,
-		Click context)
+	public void handleMouseClick(double mouseX, double mouseY, int mouseButton)
 	{
 		switch(mouseButton)
 		{
@@ -75,8 +73,6 @@ public final class CheckboxComponent extends Component
 		context.fill(x1, y1, x3, y2, getFillColor(hovering));
 		int outlineColor = RenderUtils.toIntColor(GUI.getAcColor(), 0.5F);
 		RenderUtils.drawBorder2D(context, x1, y1, x3, y2, outlineColor);
-		
-		context.state.goUpLayer();
 		
 		// check
 		if(setting.isChecked())

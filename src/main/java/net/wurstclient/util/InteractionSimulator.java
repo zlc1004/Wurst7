@@ -20,9 +20,9 @@ import net.wurstclient.settings.SwingHandSetting.SwingHand;
  * without sacrificing anti-cheat resistance or customizability.
  *
  * <p>
- * Accurately replicates {@link MinecraftClient#doItemUse()} as of 25w02a
- * (1.21.5), while being much easier to read and adding convenient ways to
- * change parts of the behavior.
+ * Accurately replicates {@link MinecraftClient#doItemUse()} as of 1.20.2, while
+ * being much easier to read and adding convenient ways to change parts of the
+ * behavior.
  */
 public enum InteractionSimulator
 {
@@ -67,9 +67,6 @@ public enum InteractionSimulator
 		for(Hand hand : Hand.values())
 		{
 			ItemStack stack = MC.player.getStackInHand(hand);
-			if(!stack.isItemEnabled(MC.world.getEnabledFeatures()))
-				return;
-			
 			if(interactBlockAndSwing(hitResult, swing, hand, stack))
 				return;
 			
@@ -121,18 +118,16 @@ public enum InteractionSimulator
 			MC.interactionManager.interactBlock(MC.player, hand, hitResult);
 		
 		// swing hand and reset equip animation
-		if(result instanceof ActionResult.Success success
-			&& success.swingSource() == ActionResult.SwingSource.CLIENT)
+		if(result.shouldSwingHand())
 		{
 			swing.swing(hand);
 			
 			if(!stack.isEmpty() && (stack.getCount() != oldCount
-				|| MC.player.isInCreativeMode()))
+				|| MC.interactionManager.hasCreativeInventory()))
 				MC.gameRenderer.firstPersonRenderer.resetEquipProgress(hand);
 		}
 		
-		return result instanceof ActionResult.Success
-			|| result instanceof ActionResult.Fail;
+		return result != ActionResult.PASS;
 	}
 	
 	/**
@@ -153,15 +148,17 @@ public enum InteractionSimulator
 		ActionResult result =
 			MC.interactionManager.interactItem(MC.player, hand);
 		
-		if(!(result instanceof ActionResult.Success success))
-			return false;
-		
 		// swing hand
-		if(success.swingSource() == ActionResult.SwingSource.CLIENT)
+		if(result.shouldSwingHand())
 			swing.swing(hand);
 		
 		// reset equip animation
-		MC.gameRenderer.firstPersonRenderer.resetEquipProgress(hand);
-		return true;
+		if(result.isAccepted())
+		{
+			MC.gameRenderer.firstPersonRenderer.resetEquipProgress(hand);
+			return true;
+		}
+		
+		return false;
 	}
 }

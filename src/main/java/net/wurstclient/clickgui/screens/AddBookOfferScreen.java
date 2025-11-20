@@ -10,19 +10,17 @@ package net.wurstclient.clickgui.screens;
 import java.util.Objects;
 
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.KeyInput;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -34,14 +32,12 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.wurstclient.hacks.autolibrarian.BookOffer;
 import net.wurstclient.settings.BookOffersSetting;
 import net.wurstclient.util.MathUtils;
 import net.wurstclient.util.RenderUtils;
-import net.wurstclient.util.WurstColors;
 
 public final class AddBookOfferScreen extends Screen
 {
@@ -226,38 +222,38 @@ public final class AddBookOfferScreen extends Screen
 	}
 	
 	@Override
-	public boolean mouseClicked(Click context, boolean doubleClick)
+	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton)
 	{
-		boolean childClicked = super.mouseClicked(context, doubleClick);
+		boolean childClicked = super.mouseClicked(mouseX, mouseY, mouseButton);
 		
-		levelField.mouseClicked(context, doubleClick);
-		priceField.mouseClicked(context, doubleClick);
+		levelField.mouseClicked(mouseX, mouseY, mouseButton);
+		priceField.mouseClicked(mouseX, mouseY, mouseButton);
 		
-		if(context.button() == GLFW.GLFW_MOUSE_BUTTON_4)
-			cancelButton.onPress(context);
+		if(mouseButton == GLFW.GLFW_MOUSE_BUTTON_4)
+			cancelButton.onPress();
 		
 		return childClicked;
 	}
 	
 	@Override
-	public boolean keyPressed(KeyInput context)
+	public boolean keyPressed(int keyCode, int scanCode, int int_3)
 	{
-		switch(context.key())
+		switch(keyCode)
 		{
 			case GLFW.GLFW_KEY_ENTER:
 			if(addButton.active)
-				addButton.onPress(context);
+				addButton.onPress();
 			break;
 			
 			case GLFW.GLFW_KEY_ESCAPE:
-			cancelButton.onPress(context);
+			cancelButton.onPress();
 			break;
 			
 			default:
 			break;
 		}
 		
-		return super.keyPressed(context);
+		return super.keyPressed(keyCode, scanCode, int_3);
 	}
 	
 	@Override
@@ -275,17 +271,19 @@ public final class AddBookOfferScreen extends Screen
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
-		Matrix3x2fStack matrixStack = context.getMatrices();
+		MatrixStack matrixStack = context.getMatrices();
+		renderBackground(context, mouseX, mouseY, partialTicks);
 		
 		listGui.render(context, mouseX, mouseY, partialTicks);
 		
-		matrixStack.pushMatrix();
+		matrixStack.push();
+		matrixStack.translate(0, 0, 300);
 		
 		TextRenderer tr = client.textRenderer;
 		String titleText =
 			"Available Books (" + listGui.children().size() + ")";
 		context.drawCenteredTextWithShadow(tr, titleText, width / 2, 12,
-			Colors.WHITE);
+			0xffffff);
 		
 		levelField.render(context, mouseX, mouseY, partialTicks);
 		priceField.render(context, mouseX, mouseY, partialTicks);
@@ -293,22 +291,19 @@ public final class AddBookOfferScreen extends Screen
 		for(Drawable drawable : drawables)
 			drawable.render(context, mouseX, mouseY, partialTicks);
 		
-		matrixStack.translate(width / 2 - 100, 0);
+		matrixStack.translate(width / 2 - 100, 0, 0);
 		
-		context.drawTextWithShadow(tr, "Level:", 0, height - 72,
-			WurstColors.VERY_LIGHT_GRAY);
-		context.drawTextWithShadow(tr, "Max price:", 0, height - 56,
-			WurstColors.VERY_LIGHT_GRAY);
+		context.drawTextWithShadow(tr, "Level:", 0, height - 72, 0xf0f0f0);
+		context.drawTextWithShadow(tr, "Max price:", 0, height - 56, 0xf0f0f0);
 		
 		if(alreadyAdded && offerToAdd != null)
 		{
 			String errorText = offerToAdd.getEnchantmentNameWithLevel()
 				+ " is already on your list!";
-			context.drawTextWithShadow(tr, errorText, 0, height - 40,
-				WurstColors.LIGHT_RED);
+			context.drawTextWithShadow(tr, errorText, 0, height - 40, 0xff5555);
 		}
 		
-		matrixStack.popMatrix();
+		matrixStack.pop();
 		
 		RenderUtils.drawItem(context, new ItemStack(Items.EMERALD),
 			width / 2 - 16, height - 58, false);
@@ -352,27 +347,26 @@ public final class AddBookOfferScreen extends Screen
 		}
 		
 		@Override
-		public boolean mouseClicked(Click context, boolean doubleClick)
+		public boolean mouseClicked(double mouseX, double mouseY,
+			int mouseButton)
 		{
-			if(context.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT)
+			if(mouseButton != GLFW.GLFW_MOUSE_BUTTON_LEFT)
 				return false;
 			
 			long timeSinceLastClick = Util.getMeasuringTimeMs() - lastClickTime;
 			lastClickTime = Util.getMeasuringTimeMs();
 			
 			if(timeSinceLastClick < 250 && addButton.active)
-				addButton.onPress(context);
+				addButton.onPress();
 			
 			return true;
 		}
 		
 		@Override
-		public void render(DrawContext context, int mouseX, int mouseY,
+		public void render(DrawContext context, int index, int y, int x,
+			int entryWidth, int entryHeight, int mouseX, int mouseY,
 			boolean hovered, float tickDelta)
 		{
-			int x = getContentX();
-			int y = getContentY();
-			
 			Item item = Registries.ITEM.get(Identifier.of("enchanted_book"));
 			ItemStack stack = new ItemStack(item);
 			RenderUtils.drawItem(context, stack, x + 1, y + 1, true);
@@ -382,17 +376,16 @@ public final class AddBookOfferScreen extends Screen
 				bookOffer.getEnchantmentEntry().get();
 			
 			String name = bookOffer.getEnchantmentName();
-			int nameColor = enchantment.isIn(EnchantmentTags.CURSE)
-				? WurstColors.LIGHT_RED : WurstColors.VERY_LIGHT_GRAY;
+			int nameColor =
+				enchantment.isIn(EnchantmentTags.CURSE) ? 0xFF5555 : 0xF0F0F0;
 			context.drawText(tr, name, x + 28, y, nameColor, false);
 			
-			context.drawText(tr, bookOffer.id(), x + 28, y + 9,
-				Colors.LIGHT_GRAY, false);
+			context.drawText(tr, bookOffer.id(), x + 28, y + 9, 0xA0A0A0,
+				false);
 			
 			int maxLevel = enchantment.value().getMaxLevel();
 			String levels = maxLevel + (maxLevel == 1 ? " level" : " levels");
-			context.drawText(tr, levels, x + 28, y + 18, Colors.LIGHT_GRAY,
-				false);
+			context.drawText(tr, levels, x + 28, y + 18, 0xA0A0A0, false);
 		}
 	}
 	
@@ -404,8 +397,7 @@ public final class AddBookOfferScreen extends Screen
 			super(minecraft, screen.width, screen.height - 120, 36, 30);
 			
 			DynamicRegistryManager drm = client.world.getRegistryManager();
-			Registry<Enchantment> registry =
-				drm.getOrThrow(RegistryKeys.ENCHANTMENT);
+			Registry<Enchantment> registry = drm.get(RegistryKeys.ENCHANTMENT);
 			
 			registry.stream().map(BookOffer::create)
 				.filter(BookOffer::isFullyValid).sorted()

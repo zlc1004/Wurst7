@@ -12,7 +12,6 @@ import org.lwjgl.glfw.GLFW;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.ItemStack;
 import net.wurstclient.clickgui.ClickGui;
@@ -38,8 +37,7 @@ public final class BlockComponent extends Component
 	}
 	
 	@Override
-	public void handleMouseClick(double mouseX, double mouseY, int mouseButton,
-		Click context)
+	public void handleMouseClick(double mouseX, double mouseY, int mouseButton)
 	{
 		if(mouseX < getX() + getWidth() - BLOCK_WIDTH)
 			return;
@@ -80,8 +78,6 @@ public final class BlockComponent extends Component
 		int bgColor =
 			RenderUtils.toIntColor(GUI.getBgColor(), GUI.getOpacity());
 		context.fill(x1, y1, x2, y2, bgColor);
-		
-		context.state.goUpLayer();
 		
 		// text
 		String name = setting.getName() + ":";

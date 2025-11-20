@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.mojang.blaze3d.platform.GlConst;
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumer;
@@ -61,7 +64,7 @@ public class PathFinder
 			start = new PathPos(BlockPos.ofFloored(MC.player.getX(),
 				MC.player.getY() + 0.5, MC.player.getZ()));
 		else
-			start = new PathPos(BlockPos.ofFloored(MC.player.getEntityPos()));
+			start = new PathPos(BlockPos.ofFloored(MC.player.getPos()));
 		this.goal = goal;
 		
 		costMap.put(start, 0F);
@@ -185,7 +188,7 @@ public class PathFinder
 		}
 		
 		// up
-		if(pos.getY() < MC.world.getTopYInclusive() && canGoThrough(up.up())
+		if(pos.getY() < MC.world.getTopY() && canGoThrough(up.up())
 			&& (flying || onGround || canClimbUpAt(pos))
 			&& (flying || canClimbUpAt(pos) || goal.equals(up)
 				|| canSafelyStandOn(north) || canSafelyStandOn(east)
@@ -542,6 +545,10 @@ public class PathFinder
 	public void renderPath(MatrixStack matrixStack, boolean debugMode,
 		boolean depthTest)
 	{
+		int depthFunc = depthTest ? GlConst.GL_LEQUAL : GlConst.GL_ALWAYS;
+		RenderSystem.enableDepthTest();
+		RenderSystem.depthFunc(depthFunc);
+		
 		VertexConsumerProvider.Immediate vcp =
 			MC.getBufferBuilders().getEntityVertexConsumers();
 		VertexConsumer buffer =

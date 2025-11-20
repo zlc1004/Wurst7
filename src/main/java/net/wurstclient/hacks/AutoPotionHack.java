@@ -71,15 +71,15 @@ public final class AutoPotionHack extends Hack implements UpdateListener
 				return;
 			
 			// save old slot
-			int oldSlot = MC.player.getInventory().getSelectedSlot();
+			int oldSlot = MC.player.getInventory().selectedSlot;
 			
 			// throw potion in hotbar
-			MC.player.getInventory().setSelectedSlot(potionInHotbar);
+			MC.player.getInventory().selectedSlot = potionInHotbar;
 			new Rotation(MC.player.getYaw(), 90).sendPlayerLookPacket();
 			IMC.getInteractionManager().rightClickItem();
 			
 			// reset slot and rotation
-			MC.player.getInventory().setSelectedSlot(oldSlot);
+			MC.player.getInventory().selectedSlot = oldSlot;
 			new Rotation(MC.player.getYaw(), MC.player.getPitch())
 				.sendPlayerLookPacket();
 			

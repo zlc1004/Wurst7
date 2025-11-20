@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
-  "id": "wurst",
+  "id": "jei",
   "version": "${version}",
-  "name": "Wurst Client",
-  "description": "Wurst Wurst Wurst!",
+  "name": "Just Enough Items",
+  "description": "JEI is an item and recipe viewing mod for Minecraft, built from the ground up for stability and performance. (kobosh1)",
   "authors": [
-    "Alexander01998"
+    "Alexander01998",
+    "kobosh"
   ],
   "contact": {
-    "homepage": "https://www.wurstclient.net/modmenu-homepage/",
-    "sources": "https://www.wurstclient.net/modmenu-sources/",
-    "issues": "https://www.wurstclient.net/modmenu-issues/"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/jei",
+    "sources": "https://github.com/mezz/JustEnoughItems"
   },
   "license": "GPL-3.0-or-later",
-  "icon": "assets/wurst/icon.png",
+  "icon": "assets/jei/jei-icon.png",
   "environment": "client",
   "entrypoints": {
     "main": [
@@ -26,9 +26,9 @@
   ],
   "accessWidener": "wurst.accesswidener",
   "depends": {
-    "fabricloader": ">=0.17.0",
-    "fabric-api": ">=0.133.7",
-    "minecraft": "~1.21.9-beta.2",
+    "fabricloader": ">=0.15.10",
+    "fabric-api": ">=0.107.0",
+    "minecraft": "~1.21-beta.1",
     "java": ">=21"
   },
   "suggests": {

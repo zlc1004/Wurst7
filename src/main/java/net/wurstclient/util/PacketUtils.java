@@ -27,18 +27,16 @@ public enum PacketUtils
 	{
 		if(packet instanceof LookAndOnGround)
 			return new Full(x, y, z, packet.getYaw(0), packet.getPitch(0),
-				packet.isOnGround(), packet.horizontalCollision());
+				packet.isOnGround());
 		
 		if(packet instanceof OnGroundOnly)
-			return new PositionAndOnGround(x, y, z, packet.isOnGround(),
-				packet.horizontalCollision());
+			return new PositionAndOnGround(x, y, z, packet.isOnGround());
 		
 		if(packet instanceof Full)
 			return new Full(x, y, z, packet.getYaw(0), packet.getPitch(0),
-				packet.isOnGround(), packet.horizontalCollision());
+				packet.isOnGround());
 		
-		return new PositionAndOnGround(x, y, z, packet.isOnGround(),
-			packet.horizontalCollision());
+		return new PositionAndOnGround(x, y, z, packet.isOnGround());
 	}
 	
 	/**
@@ -51,18 +49,16 @@ public enum PacketUtils
 	{
 		if(packet instanceof PositionAndOnGround)
 			return new Full(packet.getX(0), packet.getY(0), packet.getZ(0), yaw,
-				pitch, packet.isOnGround(), packet.horizontalCollision());
+				pitch, packet.isOnGround());
 		
 		if(packet instanceof OnGroundOnly)
-			return new LookAndOnGround(yaw, pitch, packet.isOnGround(),
-				packet.horizontalCollision());
+			return new LookAndOnGround(yaw, pitch, packet.isOnGround());
 		
 		if(packet instanceof Full)
 			return new Full(packet.getX(0), packet.getY(0), packet.getZ(0), yaw,
-				pitch, packet.isOnGround(), packet.horizontalCollision());
+				pitch, packet.isOnGround());
 		
-		return new LookAndOnGround(yaw, pitch, packet.isOnGround(),
-			packet.horizontalCollision());
+		return new LookAndOnGround(yaw, pitch, packet.isOnGround());
 	}
 	
 	/**
@@ -73,40 +69,16 @@ public enum PacketUtils
 	{
 		if(packet instanceof Full)
 			return new Full(packet.getX(0), packet.getY(0), packet.getZ(0),
-				packet.getYaw(0), packet.getPitch(0), onGround,
-				packet.horizontalCollision());
+				packet.getYaw(0), packet.getPitch(0), onGround);
 		
 		if(packet instanceof PositionAndOnGround)
 			return new PositionAndOnGround(packet.getX(0), packet.getY(0),
-				packet.getZ(0), onGround, packet.horizontalCollision());
+				packet.getZ(0), onGround);
 		
 		if(packet instanceof LookAndOnGround)
 			return new LookAndOnGround(packet.getYaw(0), packet.getPitch(0),
-				onGround, packet.horizontalCollision());
+				onGround);
 		
-		return new OnGroundOnly(onGround, packet.horizontalCollision());
-	}
-	
-	/**
-	 * Creates a new PlayerMoveC2SPacket with a modified horizontal collision
-	 * flag.
-	 */
-	public static PlayerMoveC2SPacket modifyHorizontalCollision(
-		PlayerMoveC2SPacket packet, boolean horizontalCollision)
-	{
-		if(packet instanceof Full)
-			return new Full(packet.getX(0), packet.getY(0), packet.getZ(0),
-				packet.getYaw(0), packet.getPitch(0), packet.isOnGround(),
-				horizontalCollision);
-		
-		if(packet instanceof PositionAndOnGround)
-			return new PositionAndOnGround(packet.getX(0), packet.getY(0),
-				packet.getZ(0), packet.isOnGround(), horizontalCollision);
-		
-		if(packet instanceof LookAndOnGround)
-			return new LookAndOnGround(packet.getYaw(0), packet.getPitch(0),
-				packet.isOnGround(), horizontalCollision);
-		
-		return new OnGroundOnly(packet.isOnGround(), horizontalCollision);
+		return new OnGroundOnly(onGround);
 	}
 }

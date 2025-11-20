@@ -109,7 +109,7 @@ public final class FeedAuraHack extends Hack
 	public void onUpdate()
 	{
 		ClientPlayerEntity player = MC.player;
-		ItemStack heldStack = player.getInventory().getSelectedStack();
+		ItemStack heldStack = player.getInventory().getMainHandStack();
 		
 		double rangeSq = range.getValueSq();
 		Stream<AnimalEntity> stream = EntityUtils.getValidAnimals()
@@ -168,8 +168,7 @@ public final class FeedAuraHack extends Hack
 		if(!actionResult.isAccepted())
 			actionResult = im.interactEntity(player, target, hand);
 		
-		if(actionResult instanceof ActionResult.Success success
-			&& success.swingSource() == ActionResult.SwingSource.CLIENT)
+		if(actionResult.isAccepted() && actionResult.shouldSwingHand())
 			player.swingHand(hand);
 		
 		target = null;

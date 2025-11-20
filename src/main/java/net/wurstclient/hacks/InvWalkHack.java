@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.AbstractInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.item.ItemGroups;
@@ -98,8 +98,7 @@ public final class InvWalkHack extends Hack implements UpdateListener
 	
 	private boolean isAllowedScreen(Screen screen)
 	{
-		if((screen instanceof InventoryScreen
-			|| screen instanceof CreativeInventoryScreen)
+		if(screen instanceof AbstractInventoryScreen
 			&& !isCreativeSearchBarOpen(screen))
 			return true;
 		

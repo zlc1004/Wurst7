@@ -7,79 +7,118 @@
  */
 package net.wurstclient.mixin;
 
+import org.joml.Matrix4f;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
-
-import net.minecraft.client.render.entity.EntityRenderManager;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.font.TextRenderer.TextLayerType;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityAttachmentType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.Vec3d;
 import net.wurstclient.WurstClient;
-import net.wurstclient.hacks.HealthTagsHack;
+import net.wurstclient.hacks.NameTagsHack;
 
 @Mixin(EntityRenderer.class)
-public abstract class EntityRendererMixin<T extends Entity, S extends EntityRenderState>
+public abstract class EntityRendererMixin<T extends Entity>
 {
-	/**
-	 * Disables the nametag distance limit if configured in NameTags.
-	 */
-	@WrapOperation(at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/client/render/entity/EntityRenderManager;getSquaredDistanceToCamera(Lnet/minecraft/entity/Entity;)D"),
-		method = "updateRenderState(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/render/entity/state/EntityRenderState;F)V")
-	private double fakeSquaredDistanceToCamera(EntityRenderManager dispatcher,
-		Entity entity, Operation<Double> original,
-		@Share("actualDistanceSq") LocalDoubleRef actualDistanceSq)
+	@Shadow
+	@Final
+	protected EntityRenderDispatcher dispatcher;
+	
+	@Inject(at = @At("HEAD"),
+		method = "renderLabelIfPresent(Lnet/minecraft/entity/Entity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IF)V",
+		cancellable = true)
+	private void onRenderLabelIfPresent(T entity, Text text,
+		MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider,
+		int i, float tickDelta, CallbackInfo ci)
 	{
-		actualDistanceSq.set(original.call(dispatcher, entity));
+		// add HealthTags info
+		if(entity instanceof LivingEntity)
+			text = WurstClient.INSTANCE.getHax().healthTagsHack
+				.addHealth((LivingEntity)entity, text);
 		
-		if(WurstClient.INSTANCE.getHax().nameTagsHack.isUnlimitedRange())
-			return 0;
-		
-		return actualDistanceSq.get();
+		// do NameTags adjustments
+		wurstRenderLabelIfPresent(entity, text, matrixStack,
+			vertexConsumerProvider, i, tickDelta);
+		ci.cancel();
 	}
 	
 	/**
-	 * Restores the true squared distance so we don't break other code that
-	 * might rely on it.
+	 * Copy of renderLabelIfPresent() since calling the original would result in
+	 * an infinite loop. Also makes it easier to modify.
 	 */
-	@Inject(at = @At("TAIL"),
-		method = "updateRenderState(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/render/entity/state/EntityRenderState;F)V")
-	private void restoreSquaredDistanceToCamera(T entity, S state,
-		float tickDelta, CallbackInfo ci,
-		@Share("actualDistanceSq") LocalDoubleRef actualDistanceSq)
+	protected void wurstRenderLabelIfPresent(T entity, Text text,
+		MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
+		float tickDelta)
 	{
-		state.squaredDistanceToCamera = actualDistanceSq.get();
+		NameTagsHack nameTags = WurstClient.INSTANCE.getHax().nameTagsHack;
+		
+		// disable distance limit if configured in NameTags
+		double distanceSq = dispatcher.getSquaredDistanceToCamera(entity);
+		if(distanceSq > 4096 && !nameTags.isUnlimitedRange())
+			return;
+		
+		// get attachment point
+		Vec3d attVec = entity.getAttachments().getPointNullable(
+			EntityAttachmentType.NAME_TAG, 0, entity.getYaw(tickDelta));
+		if(attVec == null)
+			return;
+		
+		// disable sneaking changes if NameTags is enabled
+		boolean notSneaky = !entity.isSneaky() || nameTags.isEnabled();
+		
+		int labelY = "deadmau5".equals(text.getString()) ? -10 : 0;
+		
+		matrices.push();
+		matrices.translate(attVec.x, attVec.y + 0.5, attVec.z);
+		matrices.multiply(dispatcher.getRotation());
+		
+		// adjust scale if NameTags is enabled
+		float scale = 0.025F * nameTags.getScale();
+		if(nameTags.isEnabled())
+		{
+			double distance = WurstClient.MC.player.distanceTo(entity);
+			if(distance > 10)
+				scale *= distance / 10;
+		}
+		matrices.scale(scale, -scale, scale);
+		
+		Matrix4f matrix = matrices.peek().getPositionMatrix();
+		float bgOpacity =
+			WurstClient.MC.options.getTextBackgroundOpacity(0.25F);
+		int bgColor = (int)(bgOpacity * 255F) << 24;
+		TextRenderer tr = getTextRenderer();
+		float labelX = -tr.getWidth(text) / 2;
+		
+		// adjust layers if using NameTags in see-through mode
+		TextLayerType bgLayer = notSneaky && !nameTags.isSeeThrough()
+			? TextLayerType.SEE_THROUGH : TextLayerType.NORMAL;
+		TextLayerType textLayer = nameTags.isSeeThrough()
+			? TextLayerType.SEE_THROUGH : TextLayerType.NORMAL;
+		
+		// draw background
+		tr.draw(text, labelX, labelY, 0x20FFFFFF, false, matrix,
+			vertexConsumers, bgLayer, bgColor, light);
+		
+		// draw text
+		if(notSneaky)
+			tr.draw(text, labelX, labelY, 0xFFFFFFFF, false, matrix,
+				vertexConsumers, textLayer, 0, light);
+		
+		matrices.pop();
 	}
 	
-	/**
-	 * Modifies the display name in the render state to include health
-	 * information when HealthTags is enabled. This is called every frame, so
-	 * the health values are always up-to-date and automatically revert when
-	 * HealthTags is disabled.
-	 */
-	@Inject(at = @At("TAIL"),
-		method = "updateRenderState(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/render/entity/state/EntityRenderState;F)V")
-	private void addHealthToDisplayName(T entity, S state, float tickProgress,
-		CallbackInfo ci)
-	{
-		if(state.displayName == null)
-			return;
-		if(!(entity instanceof LivingEntity le))
-			return;
-		
-		HealthTagsHack healthTags =
-			WurstClient.INSTANCE.getHax().healthTagsHack;
-		if(!healthTags.isEnabled())
-			return;
-		
-		state.displayName = healthTags.addHealth(le, state.displayName.copy());
-	}
+	@Shadow
+	public abstract TextRenderer getTextRenderer();
 }

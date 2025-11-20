@@ -18,9 +18,7 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.input.AbstractInput;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Util;
 import net.minecraft.util.Util.OperatingSystem;
 import net.wurstclient.WurstClient;
@@ -30,7 +28,6 @@ import net.wurstclient.hacks.XRayHack;
 import net.wurstclient.other_features.VanillaSpoofOtf;
 import net.wurstclient.settings.CheckboxSetting;
 import net.wurstclient.util.ChatUtils;
-import net.wurstclient.util.WurstColors;
 
 public class WurstOptionsScreen extends Screen
 {
@@ -120,26 +117,30 @@ public class WurstOptionsScreen extends Screen
 	{
 		OperatingSystem os = Util.getOperatingSystem();
 		
-		new WurstOptionsButton(54, 24, () -> "Official Website",
-			"§n§lWurstClient.net",
-			b -> os.open("https://www.wurstclient.net/options-website/"));
-		
-		new WurstOptionsButton(54, 48, () -> "Wurst Wiki", "§n§lWurst.Wiki",
-			b -> os.open("https://www.wurstclient.net/options-wiki/"));
-		
-		new WurstOptionsButton(54, 72, () -> "WurstForum", "§n§lWurstForum.net",
-			b -> os.open("https://www.wurstclient.net/options-forum/"));
-		
-		new WurstOptionsButton(54, 96, () -> "Twitter", "@Wurst_Imperium",
-			b -> os.open("https://www.wurstclient.net/options-twitter/"));
-		
-		new WurstOptionsButton(54, 120, () -> "Donate",
-			"§n§lWurstClient.net/donate\n"
-				+ "Donate now to help me keep the Wurst Client alive and free"
-				+ " to use for everyone.\n\n"
-				+ "Every bit helps and is much appreciated! You can also get a"
-				+ " few cool perks in return.",
-			b -> os.open("https://www.wurstclient.net/options-donate/"));
+		new WurstOptionsButton(54, 24, () -> "Kobosh Website", "§n§lkobosh.com",
+			b -> os.open("https://kobosh.com"));
+		//
+		// new WurstOptionsButton(54, 48, () -> " Wiki", "§n§lWurst.Wiki\n"
+		// + "We are looking for volunteers to help us expand"
+		// + " the wiki and keep it up to date with the latest Wurst updates.",
+		// b -> os.open(
+		// "https://wurst.wiki/?utm_source=Wurst+Client&utm_medium=Wurst+Options&utm_content=Wurst+Wiki"));
+		//
+		// new WurstOptionsButton(54, 72, () -> "WurstForum",
+		// "§n§lWurstForum.net",
+		// b -> os.open(
+		// "https://wurstforum.net/?utm_source=Wurst+Client&utm_medium=Wurst+Options&utm_content=WurstForum"));
+		//
+		// new WurstOptionsButton(54, 96, () -> "Twitter", "@Wurst_Imperium",
+		// b -> os.open("https://www.wurstclient.net/twitter/"));
+		//
+		// new WurstOptionsButton(54, 120, () -> "Donate",
+		// "§n§lWurstClient.net/donate\n"
+		// + "Donate now to help me keep the Wurst Client alive and free"
+		// + " to use for everyone.\n\n"
+		// + "Every bit helps and is much appreciated! You can also get a"
+		// + " few cool perks in return.",
+		// b -> os.open("https://www.wurstclient.net/options-donate/"));
 	}
 	
 	@Override
@@ -152,6 +153,7 @@ public class WurstOptionsScreen extends Screen
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
+		renderBackground(context, mouseX, mouseY, partialTicks);
 		renderTitles(context);
 		
 		for(Drawable drawable : drawables)
@@ -168,14 +170,14 @@ public class WurstOptionsScreen extends Screen
 		int y2 = height / 4 + 24 - 28;
 		
 		context.drawCenteredTextWithShadow(tr, "Wurst Options", middleX, y1,
-			Colors.WHITE);
+			0xffffff);
 		
 		context.drawCenteredTextWithShadow(tr, "Settings", middleX - 104, y2,
-			WurstColors.VERY_LIGHT_GRAY);
+			0xcccccc);
 		context.drawCenteredTextWithShadow(tr, "Managers", middleX, y2,
-			WurstColors.VERY_LIGHT_GRAY);
+			0xcccccc);
 		context.drawCenteredTextWithShadow(tr, "Links", middleX + 104, y2,
-			WurstColors.VERY_LIGHT_GRAY);
+			0xcccccc);
 	}
 	
 	private void renderButtonTooltip(DrawContext context, int mouseX,
@@ -229,9 +231,9 @@ public class WurstOptionsScreen extends Screen
 		}
 		
 		@Override
-		public void onPress(AbstractInput context)
+		public void onPress()
 		{
-			super.onPress(context);
+			super.onPress();
 			setMessage(Text.literal(messageSupplier.get()));
 		}
 	}

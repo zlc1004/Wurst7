@@ -27,8 +27,8 @@ public final class SettingsCmd extends Command
 	public SettingsCmd()
 	{
 		super("settings", "Allows you to make profiles of your settings.",
-			".settings load-profile <file>", ".settings save-profile <file>",
-			".settings list-profiles [<page>]",
+			".settings load <file>", ".settings save <file>",
+			".settings list [<page>]",
 			"Profiles are saved in '.minecraft/wurst/settings'.");
 	}
 	
@@ -40,15 +40,15 @@ public final class SettingsCmd extends Command
 		
 		switch(args[0].toLowerCase())
 		{
-			case "load-profile":
+			case "load":
 			loadProfile(args);
 			break;
 			
-			case "save-profile":
+			case "save":
 			saveProfile(args);
 			break;
 			
-			case "list-profiles":
+			case "list":
 			listProfiles(args);
 			break;
 			

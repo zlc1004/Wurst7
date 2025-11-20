@@ -47,7 +47,7 @@ public final class PotionCmd extends Command
 		if(!MC.player.getAbilities().creativeMode)
 			throw new CmdError("Creative mode only.");
 		
-		ItemStack stack = MC.player.getInventory().getSelectedStack();
+		ItemStack stack = MC.player.getInventory().getMainHandStack();
 		if(!(stack.getItem() instanceof PotionItem))
 			throw new CmdError("You must hold a potion in your main hand.");
 		
@@ -96,7 +96,7 @@ public final class PotionCmd extends Command
 		
 		stack.set(DataComponentTypes.POTION_CONTENTS,
 			new PotionContentsComponent(potion, oldContents.customColor(),
-				effects, oldContents.customName()));
+				effects));
 		ChatUtils.message("Potion modified.");
 	}
 	
@@ -128,7 +128,7 @@ public final class PotionCmd extends Command
 				: oldContents.potion();
 		stack.set(DataComponentTypes.POTION_CONTENTS,
 			new PotionContentsComponent(newPotion, oldContents.customColor(),
-				newEffects, oldContents.customName()));
+				newEffects));
 		
 		ChatUtils.message("Effect removed.");
 	}

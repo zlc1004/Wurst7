@@ -11,7 +11,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.entity.passive.PufferfishEntity;
-import net.minecraft.entity.passive.WaterAnimalEntity;
 
 public final class FilterPassiveWaterSetting extends EntityFilterCheckbox
 {
@@ -32,7 +31,7 @@ public final class FilterPassiveWaterSetting extends EntityFilterCheckbox
 			return true;
 		
 		return !(e instanceof WaterCreatureEntity
-			|| e instanceof WaterAnimalEntity || e instanceof AxolotlEntity);
+			|| e instanceof AxolotlEntity);
 	}
 	
 	public static FilterPassiveWaterSetting genericCombat(boolean checked)

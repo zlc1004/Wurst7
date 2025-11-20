@@ -7,13 +7,14 @@
  */
 package net.wurstclient.hacks;
 
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MaceItem;
+import net.minecraft.item.ToolItem;
+import net.minecraft.item.TridentItem;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.wurstclient.Category;
@@ -132,10 +133,10 @@ public final class AutoSwordHack extends Hack implements UpdateListener
 		
 		// save old slot
 		if(oldSlot == -1)
-			oldSlot = MC.player.getInventory().getSelectedSlot();
+			oldSlot = MC.player.getInventory().selectedSlot;
 		
 		// set slot
-		MC.player.getInventory().setSelectedSlot(bestSlot);
+		MC.player.getInventory().selectedSlot = bestSlot;
 		
 		// start timer
 		timer = releaseTime.getValueI();
@@ -144,15 +145,15 @@ public final class AutoSwordHack extends Hack implements UpdateListener
 	private float getValue(ItemStack stack, Entity entity)
 	{
 		Item item = stack.getItem();
-		if(stack.get(DataComponentTypes.TOOL) == null
-			&& stack.get(DataComponentTypes.WEAPON) == null)
+		if(!(item instanceof ToolItem || item instanceof TridentItem
+			|| item instanceof MaceItem))
 			return Integer.MIN_VALUE;
 		
 		switch(priority.getSelected())
 		{
 			case SPEED:
 			return (float)ItemUtils
-				.getAttribute(item, EntityAttributes.ATTACK_SPEED)
+				.getAttribute(item, EntityAttributes.GENERIC_ATTACK_SPEED)
 				.orElse(Integer.MIN_VALUE);
 			
 			// Client-side item-specific attack damage calculation no
@@ -160,7 +161,7 @@ public final class AutoSwordHack extends Hack implements UpdateListener
 			case DAMAGE:
 			// EntityType<?> group = entity.getType();
 			float dmg = (float)ItemUtils
-				.getAttribute(item, EntityAttributes.ATTACK_DAMAGE)
+				.getAttribute(item, EntityAttributes.GENERIC_ATTACK_DAMAGE)
 				.orElse(Integer.MIN_VALUE);
 			
 			// Check for mace, get bonus damage from fall
@@ -184,7 +185,7 @@ public final class AutoSwordHack extends Hack implements UpdateListener
 		
 		if(oldSlot != -1)
 		{
-			MC.player.getInventory().setSelectedSlot(oldSlot);
+			MC.player.getInventory().selectedSlot = oldSlot;
 			oldSlot = -1;
 		}
 	}

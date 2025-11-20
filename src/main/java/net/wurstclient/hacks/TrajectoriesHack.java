@@ -274,7 +274,7 @@ public final class TrajectoriesHack extends Hack implements RenderListener
 		public Box getEndBox()
 		{
 			Vec3d end = path.get(path.size() - 1);
-			return new Box(end.subtract(0.5), end.add(0.5));
+			return new Box(end.subtract(0.5, 0.5, 0.5), end.add(0.5, 0.5, 0.5));
 		}
 	}
 }

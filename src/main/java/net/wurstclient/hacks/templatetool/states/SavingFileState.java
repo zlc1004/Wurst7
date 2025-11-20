@@ -55,7 +55,7 @@ public final class SavingFileState extends TemplateToolState
 		
 		// Show success message
 		MutableText message = Text.literal("Saved template as ");
-		ClickEvent event = new ClickEvent.OpenFile(
+		ClickEvent event = new ClickEvent(ClickEvent.Action.OPEN_FILE,
 			hack.getFile().getParentFile().getAbsolutePath());
 		MutableText link = Text.literal(hack.getFile().getName())
 			.styled(s -> s.withUnderline(true).withClickEvent(event));

@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
-import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
+import com.mojang.blaze3d.systems.RenderSystem;
 
+import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
@@ -157,13 +158,16 @@ public final class BaseFinderHack extends Hack
 		if(vertexBuffer == null)
 			return;
 		
+		color.setAsShaderColor(0.25F);
+		
 		matrixStack.push();
 		RenderUtils.applyRegionalRenderOffset(matrixStack, region);
 		
-		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_QUADS,
-			color.getColorF(), 0.25F);
+		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_QUADS);
 		
 		matrixStack.pop();
+		
+		RenderSystem.setShaderColor(1, 1, 1, 1);
 	}
 	
 	@Override
@@ -192,7 +196,7 @@ public final class BaseFinderHack extends Hack
 			matchingBlocks.clear();
 		
 		int stepSize = MC.world.getHeight() / 64;
-		int startY = MC.world.getTopYInclusive() - 1 - modulo * stepSize;
+		int startY = MC.world.getTopY() - 1 - modulo * stepSize;
 		int endY = startY - stepSize;
 		
 		BlockPos playerPos =

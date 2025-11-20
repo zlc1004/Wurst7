@@ -137,7 +137,7 @@ public enum BlockUtils
 	
 	public static boolean isOpaqueFullCube(BlockPos pos)
 	{
-		return getState(pos).isOpaqueFullCube();
+		return getState(pos).isOpaqueFullCube(MC.world, pos);
 	}
 	
 	public static BlockHitResult raycast(Vec3d from, Vec3d to,

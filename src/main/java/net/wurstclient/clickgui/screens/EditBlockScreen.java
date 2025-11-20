@@ -7,7 +7,6 @@
  */
 package net.wurstclient.clickgui.screens;
 
-import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.block.Block;
@@ -18,14 +17,12 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.KeyInput;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.wurstclient.settings.BlockSetting;
 import net.wurstclient.util.BlockUtils;
 import net.wurstclient.util.RenderUtils;
-import net.wurstclient.util.WurstColors;
 
 public final class EditBlockScreen extends Screen
 {
@@ -78,9 +75,9 @@ public final class EditBlockScreen extends Screen
 	}
 	
 	@Override
-	public boolean keyPressed(KeyInput context)
+	public boolean keyPressed(int keyCode, int scanCode, int int_3)
 	{
-		switch(context.key())
+		switch(keyCode)
 		{
 			case GLFW.GLFW_KEY_ENTER:
 			done();
@@ -91,27 +88,27 @@ public final class EditBlockScreen extends Screen
 			break;
 		}
 		
-		return super.keyPressed(context);
+		return super.keyPressed(keyCode, scanCode, int_3);
 	}
 	
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
-		Matrix3x2fStack matrixStack = context.getMatrices();
+		MatrixStack matrixStack = context.getMatrices();
 		TextRenderer tr = client.textRenderer;
 		
+		renderBackground(context, mouseX, mouseY, partialTicks);
 		context.drawCenteredTextWithShadow(tr, setting.getName(), width / 2, 20,
-			Colors.WHITE);
+			0xFFFFFF);
 		
 		blockField.render(context, mouseX, mouseY, partialTicks);
 		
 		for(Drawable drawable : drawables)
 			drawable.render(context, mouseX, mouseY, partialTicks);
 		
-		context.state.goUpLayer();
-		matrixStack.pushMatrix();
-		matrixStack.translate(-64 + width / 2 - 100, 115);
+		matrixStack.push();
+		matrixStack.translate(-64 + width / 2 - 100, 115, 0);
 		
 		boolean lblAbove =
 			!blockField.getText().isEmpty() || blockField.isFocused();
@@ -119,18 +116,18 @@ public final class EditBlockScreen extends Screen
 			lblAbove ? "Block ID or number:" : "block ID or number";
 		int lblX = lblAbove ? 50 : 68;
 		int lblY = lblAbove ? -66 : -50;
-		int lblColor = lblAbove ? WurstColors.VERY_LIGHT_GRAY : Colors.GRAY;
+		int lblColor = lblAbove ? 0xF0F0F0 : 0x808080;
 		context.drawTextWithShadow(tr, lblText, lblX, lblY, lblColor);
 		
-		int border = blockField.isFocused() ? Colors.WHITE : Colors.LIGHT_GRAY;
-		int black = Colors.BLACK;
+		int border = blockField.isFocused() ? 0xffffffff : 0xffa0a0a0;
+		int black = 0xff000000;
 		
 		context.fill(48, -56, 64, -36, border);
 		context.fill(49, -55, 65, -37, black);
 		context.fill(242, -56, 246, -36, border);
 		context.fill(241, -55, 245, -37, black);
 		
-		matrixStack.popMatrix();
+		matrixStack.pop();
 		
 		String nameOrId = blockField.getText();
 		Block blockToAdd = BlockUtils.getBlockFromNameOrID(nameOrId);

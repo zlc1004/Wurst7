@@ -33,7 +33,7 @@ public final class WurstLogoOtf extends OtherFeature
 	
 	public WurstLogoOtf()
 	{
-		super("WurstLogo", "Shows the Wurst logo and version on the screen.");
+		super("KoboshLogo", "Shows the Kobosh logo and version on the screen.");
 		addSetting(bgColor);
 		addSetting(txtColor);
 		addSetting(visibility);
@@ -59,7 +59,9 @@ public final class WurstLogoOtf extends OtherFeature
 		ALWAYS("Always", () -> true),
 		
 		ONLY_OUTDATED("Only when outdated",
-			() -> WURST.getUpdater().isOutdated());
+			() -> WURST.getUpdater().isOutdated()),
+		
+		NEVER("Never", () -> false);
 		
 		private final String name;
 		private final BooleanSupplier visible;

@@ -10,12 +10,12 @@ package net.wurstclient.hud;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 import net.wurstclient.Category;
 import net.wurstclient.Feature;
 import net.wurstclient.WurstClient;
@@ -122,18 +122,16 @@ public final class TabGui implements KeyPressListener
 		if(tabGuiOtf.isHidden())
 			return;
 		
-		Matrix3x2fStack matrixStack = context.getMatrices();
-		matrixStack.pushMatrix();
-		matrixStack.translate(2, 23);
-		context.state.goUpLayer();
+		MatrixStack matrixStack = context.getMatrices();
+		matrixStack.push();
+		matrixStack.translate(2, 23, 100);
 		
 		drawBox(context, 0, 0, width, height);
-		context.enableScissor(0, 0, width, height);
+		context.enableScissor(2, 23, 2 + width, 23 + height);
 		
 		int textY = 1;
 		int txtColor = WURST.getGui().getTxtColor();
 		TextRenderer tr = MC.textRenderer;
-		context.state.goUpLayer();
 		for(int i = 0; i < tabs.size(); i++)
 		{
 			String tabName = tabs.get(i).name;
@@ -150,14 +148,14 @@ public final class TabGui implements KeyPressListener
 		{
 			Tab tab = tabs.get(selected);
 			
-			matrixStack.pushMatrix();
-			matrixStack.translate(width + 2, 0);
+			matrixStack.push();
+			matrixStack.translate(width + 2, 0, 0);
 			
 			drawBox(context, 0, 0, tab.width, tab.height);
-			context.enableScissor(0, 0, tab.width, tab.height);
+			context.enableScissor(width + 4, 23, width + 4 + tab.width,
+				23 + tab.height);
 			
 			int tabTextY = 1;
-			context.state.goUpLayer();
 			for(int i = 0; i < tab.features.size(); i++)
 			{
 				Feature feature = tab.features.get(i);
@@ -174,10 +172,10 @@ public final class TabGui implements KeyPressListener
 			}
 			
 			context.disableScissor();
-			matrixStack.popMatrix();
+			matrixStack.pop();
 		}
 		
-		matrixStack.popMatrix();
+		matrixStack.pop();
 	}
 	
 	private void drawBox(DrawContext context, int x1, int y1, int x2, int y2)

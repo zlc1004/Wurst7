@@ -14,9 +14,10 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.stream.Collectors;
 
-import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
@@ -175,14 +176,17 @@ public final class SearchHack extends Hack
 		if(vertexBuffer == null || bufferRegion == null)
 			return;
 		
+		float[] rainbow = RenderUtils.getRainbowColor();
+		RenderUtils.setShaderColor(rainbow, 0.5F);
+		
 		matrixStack.push();
 		RenderUtils.applyRegionalRenderOffset(matrixStack, bufferRegion);
 		
-		float[] rainbow = RenderUtils.getRainbowColor();
-		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_QUADS, rainbow,
-			0.5F);
+		vertexBuffer.draw(matrixStack, WurstRenderLayers.ESP_QUADS);
 		
 		matrixStack.pop();
+		
+		RenderSystem.setShaderColor(1, 1, 1, 1);
 	}
 	
 	private void stopBuildingBuffer()

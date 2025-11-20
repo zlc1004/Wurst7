@@ -20,7 +20,7 @@ import net.minecraft.client.render.block.BlockModelRenderer;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockRenderView;
+import net.minecraft.world.BlockView;
 import net.wurstclient.WurstClient;
 import net.wurstclient.event.EventManager;
 import net.wurstclient.events.ShouldDrawSideListener.ShouldDrawSideEvent;
@@ -38,12 +38,13 @@ public abstract class BlockModelRendererMixin implements ItemConvertible
 	 * seeing a piston retract.
 	 */
 	@WrapOperation(at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/block/Block;shouldDrawSide(Lnet/minecraft/block/BlockState;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;)Z"),
-		method = "shouldDrawFace(Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/block/BlockState;ZLnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;)Z")
+		target = "Lnet/minecraft/block/Block;shouldDrawSide(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;)Z"),
+		method = {
+			"renderSmooth(Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/client/render/model/BakedModel;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;ZLnet/minecraft/util/math/random/Random;JI)V",
+			"renderFlat(Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/client/render/model/BakedModel;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;ZLnet/minecraft/util/math/random/Random;JI)V"})
 	private static boolean onRenderSmoothOrFlat(BlockState state,
-		BlockState otherState, Direction side, Operation<Boolean> original,
-		BlockRenderView world, BlockState stateButFromTheOtherMethod,
-		boolean cull, Direction sideButFromTheOtherMethod, BlockPos pos)
+		BlockView world, BlockPos pos, Direction side, BlockPos otherPos,
+		Operation<Boolean> original)
 	{
 		ShouldDrawSideEvent event = new ShouldDrawSideEvent(state, pos);
 		EventManager.fire(event);
@@ -57,7 +58,7 @@ public abstract class BlockModelRendererMixin implements ItemConvertible
 		if(event.isRendered() != null)
 			return event.isRendered();
 		
-		return original.call(state, otherState, side);
+		return original.call(state, world, pos, side, otherPos);
 	}
 	
 	/**
@@ -65,7 +66,7 @@ public abstract class BlockModelRendererMixin implements ItemConvertible
 	 * coloring and shading is done, if neither Sodium nor Indigo are running.
 	 */
 	@ModifyConstant(
-		method = "renderQuad(Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/model/BakedQuad;Lnet/minecraft/client/render/block/BlockModelRenderer$LightmapCache;I)V",
+		method = "renderQuad(Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/model/BakedQuad;FFFFIIIII)V",
 		constant = @Constant(floatValue = 1F))
 	private float modifyOpacity(float original)
 	{

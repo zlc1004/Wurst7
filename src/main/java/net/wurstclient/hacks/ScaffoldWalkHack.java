@@ -51,8 +51,7 @@ public final class ScaffoldWalkHack extends Hack implements UpdateListener
 	@Override
 	public void onUpdate()
 	{
-		BlockPos belowPlayer =
-			BlockPos.ofFloored(MC.player.getEntityPos()).down();
+		BlockPos belowPlayer = BlockPos.ofFloored(MC.player.getPos()).down();
 		
 		// check if block is already placed
 		if(!BlockUtils.getState(belowPlayer).isReplaceable())
@@ -87,13 +86,13 @@ public final class ScaffoldWalkHack extends Hack implements UpdateListener
 			return;
 		
 		// set slot
-		int oldSlot = MC.player.getInventory().getSelectedSlot();
-		MC.player.getInventory().setSelectedSlot(newSlot);
+		int oldSlot = MC.player.getInventory().selectedSlot;
+		MC.player.getInventory().selectedSlot = newSlot;
 		
 		scaffoldTo(belowPlayer);
 		
 		// reset slot
-		MC.player.getInventory().setSelectedSlot(oldSlot);
+		MC.player.getInventory().selectedSlot = oldSlot;
 	}
 	
 	private void scaffoldTo(BlockPos belowPlayer)

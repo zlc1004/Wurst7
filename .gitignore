@@ -34,3 +34,10 @@ hs_err_pid*
 *.pyc
 
 desktop.ini
+
+
+node_modules/
+.DS_Store
+package-lock.json
+package.json
+log.log

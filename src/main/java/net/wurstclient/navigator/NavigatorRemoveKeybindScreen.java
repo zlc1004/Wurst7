@@ -16,11 +16,9 @@ import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import net.wurstclient.WurstClient;
 import net.wurstclient.clickgui.ClickGui;
@@ -91,18 +89,16 @@ public class NavigatorRemoveKeybindScreen extends NavigatorScreen
 	}
 	
 	@Override
-	protected void onKeyPress(KeyInput context)
+	protected void onKeyPress(int keyCode, int scanCode, int int_3)
 	{
-		if(context.key() == GLFW.GLFW_KEY_ESCAPE
-			|| context.key() == GLFW.GLFW_KEY_BACKSPACE)
+		if(keyCode == GLFW.GLFW_KEY_ESCAPE
+			|| keyCode == GLFW.GLFW_KEY_BACKSPACE)
 			client.setScreen(parent);
 	}
 	
 	@Override
-	protected void onMouseClick(Click context)
+	protected void onMouseClick(double x, double y, int button)
 	{
-		int button = context.button();
-		
 		// back button
 		if(button == GLFW.GLFW_MOUSE_BUTTON_4)
 		{
@@ -179,7 +175,6 @@ public class NavigatorRemoveKeybindScreen extends NavigatorScreen
 			drawBox(context, x1, y1, x2, y2, buttonColor);
 			
 			// text
-			context.state.goUpLayer();
 			context.drawTextWithShadow(tr, key.replace("key.keyboard.", "")
 				+ ": " + keybind.getDescription(), x1 + 1, y1 + 1, txtColor);
 			context.drawTextWithShadow(tr, keybind.getCommand(), x1 + 1,
@@ -188,7 +183,6 @@ public class NavigatorRemoveKeybindScreen extends NavigatorScreen
 		
 		// text
 		int textY = bgy1 + scroll + 2;
-		context.state.goUpLayer();
 		for(String line : text.split("\n"))
 		{
 			context.drawTextWithShadow(tr, line, bgx1 + 2, textY, txtColor);
@@ -221,7 +215,6 @@ public class NavigatorRemoveKeybindScreen extends NavigatorScreen
 			
 			// text
 			String buttonText = button.getMessage().getString();
-			context.state.goUpLayer();
 			context.drawCenteredTextWithShadow(tr, buttonText, (x1 + x2) / 2,
 				y1 + 5, txtColor);
 		}

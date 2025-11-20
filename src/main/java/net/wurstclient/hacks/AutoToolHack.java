@@ -18,11 +18,11 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.wurstclient.Category;
@@ -97,7 +97,7 @@ public final class AutoToolHack extends Hack
 			return;
 		
 		if(prevSelectedSlot == -1)
-			prevSelectedSlot = MC.player.getInventory().getSelectedSlot();
+			prevSelectedSlot = MC.player.getInventory().selectedSlot;
 		
 		equipBestTool(pos, useSwords.isChecked(), useHands.isChecked(),
 			repairMode.getValueI());
@@ -114,7 +114,7 @@ public final class AutoToolHack extends Hack
 			return;
 		
 		if(switchBack.isChecked())
-			MC.player.getInventory().setSelectedSlot(prevSelectedSlot);
+			MC.player.getInventory().selectedSlot = prevSelectedSlot;
 		
 		prevSelectedSlot = -1;
 	}
@@ -150,7 +150,7 @@ public final class AutoToolHack extends Hack
 			return;
 		}
 		
-		player.getInventory().setSelectedSlot(bestSlot);
+		player.getInventory().selectedSlot = bestSlot;
 	}
 	
 	private int getBestSlot(BlockState state, boolean useSwords, int repairMode)
@@ -166,7 +166,7 @@ public final class AutoToolHack extends Hack
 		
 		for(int slot = 0; slot < 9; slot++)
 		{
-			if(slot == inventory.getSelectedSlot())
+			if(slot == inventory.selectedSlot)
 				continue;
 			
 			ItemStack stack = inventory.getStack(slot);
@@ -175,7 +175,7 @@ public final class AutoToolHack extends Hack
 			if(speed <= bestSpeed)
 				continue;
 			
-			if(!useSwords && stack.isIn(ItemTags.SWORDS))
+			if(!useSwords && stack.getItem() instanceof SwordItem)
 				continue;
 			
 			if(isTooDamaged(stack, repairMode))
@@ -196,11 +196,10 @@ public final class AutoToolHack extends Hack
 		{
 			DynamicRegistryManager drm =
 				WurstClient.MC.world.getRegistryManager();
-			Registry<Enchantment> registry =
-				drm.getOrThrow(RegistryKeys.ENCHANTMENT);
+			Registry<Enchantment> registry = drm.get(RegistryKeys.ENCHANTMENT);
 			
 			Optional<Reference<Enchantment>> efficiency =
-				registry.getOptional(Enchantments.EFFICIENCY);
+				registry.getEntry(Enchantments.EFFICIENCY);
 			int effLvl = efficiency
 				.map(entry -> EnchantmentHelper.getLevel(entry, stack))
 				.orElse(0);
@@ -225,7 +224,7 @@ public final class AutoToolHack extends Hack
 	private void putAwayDamagedTool(int repairMode)
 	{
 		PlayerInventory inv = MC.player.getInventory();
-		int selectedSlot = inv.getSelectedSlot();
+		int selectedSlot = inv.selectedSlot;
 		IClientPlayerInteractionManager im = IMC.getInteractionManager();
 		
 		// If there's an empty slot in the main inventory,
@@ -275,16 +274,15 @@ public final class AutoToolHack extends Hack
 		
 		if(fallbackSlot == -1)
 		{
-			int prevSlot = inventory.getSelectedSlot();
-			if(prevSlot == 8)
-				inventory.setSelectedSlot(0);
+			if(inventory.selectedSlot == 8)
+				inventory.selectedSlot = 0;
 			else
-				inventory.setSelectedSlot(prevSlot + 1);
+				inventory.selectedSlot++;
 			
 			return;
 		}
 		
-		inventory.setSelectedSlot(fallbackSlot);
+		inventory.selectedSlot = fallbackSlot;
 	}
 	
 	private int getFallbackSlot()
@@ -293,7 +291,7 @@ public final class AutoToolHack extends Hack
 		
 		for(int slot = 0; slot < 9; slot++)
 		{
-			if(slot == inventory.getSelectedSlot())
+			if(slot == inventory.selectedSlot)
 				continue;
 			
 			ItemStack stack = inventory.getStack(slot);

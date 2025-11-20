@@ -19,7 +19,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.PlainTextContent.Literal;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
-import net.minecraft.util.Colors;
 import net.wurstclient.WurstClient;
 import net.wurstclient.other_features.NoChatReportsOtf;
 import net.wurstclient.util.ChatUtils;
@@ -73,7 +72,7 @@ public final class ForcedChatReportsScreen extends Screen
 	{
 		reasonFormatted =
 			MultilineText.create(textRenderer, reason, width - 50);
-		reasonHeight = reasonFormatted.getLineCount() * textRenderer.fontHeight;
+		reasonHeight = reasonFormatted.count() * textRenderer.fontHeight;
 		
 		int buttonX = width / 2 - 100;
 		int belowReasonY =
@@ -107,14 +106,15 @@ public final class ForcedChatReportsScreen extends Screen
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
+		renderBackground(context, mouseX, mouseY, partialTicks);
+		
 		int centerX = width / 2;
 		int reasonY = (height - 68) / 2 - reasonHeight / 2;
 		int titleY = reasonY - textRenderer.fontHeight * 2;
 		
 		context.drawCenteredTextWithShadow(textRenderer, title, centerX, titleY,
-			Colors.LIGHT_GRAY);
-		reasonFormatted.draw(context, MultilineText.Alignment.CENTER, centerX,
-			reasonY, 9, true, -1);
+			0xAAAAAA);
+		reasonFormatted.drawCenterWithShadow(context, centerX, reasonY);
 		
 		for(Drawable drawable : drawables)
 			drawable.render(context, mouseX, mouseY, partialTicks);

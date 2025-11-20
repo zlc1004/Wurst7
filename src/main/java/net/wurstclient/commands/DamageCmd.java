@@ -56,7 +56,7 @@ public final class DamageCmd extends Command
 	
 	private void applyDamage(int amount)
 	{
-		Vec3d pos = MC.player.getEntityPos();
+		Vec3d pos = MC.player.getPos();
 		
 		for(int i = 0; i < 80; i++)
 		{
@@ -69,8 +69,7 @@ public final class DamageCmd extends Command
 	
 	private void sendPosition(double x, double y, double z, boolean onGround)
 	{
-		MC.player.networkHandler
-			.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(x, y, z,
-				onGround, MC.player.horizontalCollision));
+		MC.player.networkHandler.sendPacket(
+			new PlayerMoveC2SPacket.PositionAndOnGround(x, y, z, onGround));
 	}
 }

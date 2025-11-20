@@ -10,7 +10,6 @@ package net.wurstclient.hacks;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -40,7 +39,7 @@ public final class CrashChestHack extends Hack
 			return;
 		}
 		
-		if(!MC.player.getEquippedStack(EquipmentSlot.FEET).isEmpty())
+		if(!MC.player.getInventory().getArmorStack(0).isEmpty())
 		{
 			ChatUtils.error("Please clear your shoes slot.");
 			setEnabled(false);
@@ -58,7 +57,7 @@ public final class CrashChestHack extends Hack
 		stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Copy Me"));
 		
 		// give item
-		MC.player.equipment.put(EquipmentSlot.FEET, stack);
+		MC.player.getInventory().armor.set(0, stack);
 		ChatUtils.message("Item has been placed in your shoes slot.");
 		setEnabled(false);
 	}

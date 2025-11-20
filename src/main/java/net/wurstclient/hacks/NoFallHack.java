@@ -41,10 +41,10 @@ public final class NoFallHack extends Hack implements UpdateListener
 		if(player == null)
 			return getName();
 		
-		if(player.isGliding() && !allowElytra.isChecked())
+		if(player.isFallFlying() && !allowElytra.isChecked())
 			return getName() + " (paused)";
 		
-		if(player.getAbilities().creativeMode)
+		if(player.isCreative())
 			return getName() + " (paused)";
 		
 		if(pauseForMace.isChecked() && isHoldingMace(player))
@@ -71,11 +71,11 @@ public final class NoFallHack extends Hack implements UpdateListener
 	{
 		// do nothing in creative mode, since there is no fall damage anyway
 		ClientPlayerEntity player = MC.player;
-		if(player.getAbilities().creativeMode)
+		if(player.isCreative())
 			return;
 		
 		// pause when flying with elytra, unless allowed
-		boolean fallFlying = player.isGliding();
+		boolean fallFlying = player.isFallFlying();
 		if(fallFlying && !allowElytra.isChecked())
 			return;
 		
@@ -89,8 +89,7 @@ public final class NoFallHack extends Hack implements UpdateListener
 			return;
 		
 		// send packet to stop fall damage
-		player.networkHandler
-			.sendPacket(new OnGroundOnly(true, MC.player.horizontalCollision));
+		player.networkHandler.sendPacket(new OnGroundOnly(true));
 	}
 	
 	private boolean isHoldingMace(ClientPlayerEntity player)

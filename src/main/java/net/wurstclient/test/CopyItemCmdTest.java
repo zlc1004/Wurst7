@@ -24,7 +24,13 @@ public enum CopyItemCmdTest
 		clearChat();
 		
 		// Put on a golden helmet
-		runChatCommand("item replace entity @s armor.head with golden_helmet");
+		// CURSED: The /item replace command doesn't work properly in 1.21.1
+		// runChatCommand("item replace entity @s armor.head with
+		// golden_helmet");
+		runChatCommand("give @s golden_helmet");
+		runWurstCommand("t AutoArmor on");
+		waitForWorldTicks(5);
+		runWurstCommand("t AutoArmor off");
 		takeScreenshot("copyitem_command_setup");
 		assertNoItemInSlot(0);
 		assertOneItemInSlot(39, Items.GOLDEN_HELMET);

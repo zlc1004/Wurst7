@@ -31,7 +31,6 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -41,11 +40,9 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.StringHelper;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
@@ -181,24 +178,24 @@ public final class AltManagerScreen extends Screen
 	}
 	
 	@Override
-	public boolean keyPressed(KeyInput context)
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
 	{
-		if(context.key() == GLFW.GLFW_KEY_ENTER)
-			useButton.onPress(context);
+		if(keyCode == GLFW.GLFW_KEY_ENTER)
+			useButton.onPress();
 		
-		return super.keyPressed(context);
+		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 	
 	@Override
-	public boolean mouseClicked(Click context, boolean doubleClick)
+	public boolean mouseClicked(double mouseX, double mouseY, int button)
 	{
-		if(context.button() == GLFW.GLFW_MOUSE_BUTTON_4)
+		if(button == GLFW.GLFW_MOUSE_BUTTON_4)
 		{
 			close();
 			return true;
 		}
 		
-		return super.mouseClicked(context, doubleClick);
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 	
 	private void pressLogin()
@@ -408,6 +405,7 @@ public final class AltManagerScreen extends Screen
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
+		renderBackground(context, mouseX, mouseY, partialTicks);
 		listGui.render(context, mouseX, mouseY, partialTicks);
 		
 		// skin preview
@@ -423,14 +421,13 @@ public final class AltManagerScreen extends Screen
 		
 		// title text
 		context.drawCenteredTextWithShadow(textRenderer, "Alt Manager",
-			width / 2, 4, Colors.WHITE);
+			width / 2, 4, 16777215);
 		context.drawCenteredTextWithShadow(textRenderer,
-			"Alts: " + altManager.getList().size(), width / 2, 14,
-			Colors.LIGHT_GRAY);
+			"Alts: " + altManager.getList().size(), width / 2, 14, 10526880);
 		context.drawCenteredTextWithShadow(
 			textRenderer, "premium: " + altManager.getNumPremium()
 				+ ", cracked: " + altManager.getNumCracked(),
-			width / 2, 24, Colors.LIGHT_GRAY);
+			width / 2, 24, 10526880);
 		
 		// red flash for errors
 		if(errorTimer > 0)
@@ -459,7 +456,8 @@ public final class AltManagerScreen extends Screen
 		
 		int hoveredIndex = listGui.children().indexOf(hoveredEntry);
 		int itemX = mouseX - listGui.getRowLeft();
-		int itemY = mouseY - listGui.getRowTop(hoveredIndex);
+		int itemY = mouseY - 36 + (int)listGui.getScrollAmount() - 4
+			- hoveredIndex * 30;
 		
 		if(itemX < 31 || itemY < 15 || itemY >= 25)
 			return;
@@ -558,9 +556,10 @@ public final class AltManagerScreen extends Screen
 		}
 		
 		@Override
-		public boolean mouseClicked(Click context, boolean doubleClick)
+		public boolean mouseClicked(double mouseX, double mouseY,
+			int mouseButton)
 		{
-			if(context.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT)
+			if(mouseButton != GLFW.GLFW_MOUSE_BUTTON_LEFT)
 				return false;
 			
 			long timeSinceLastClick = Util.getMeasuringTimeMs() - lastClickTime;
@@ -573,12 +572,10 @@ public final class AltManagerScreen extends Screen
 		}
 		
 		@Override
-		public void render(DrawContext context, int mouseX, int mouseY,
+		public void render(DrawContext context, int index, int y, int x,
+			int entryWidth, int entryHeight, int mouseX, int mouseY,
 			boolean hovered, float tickDelta)
 		{
-			int x = getContentX();
-			int y = getContentY();
-			
 			// green glow when logged in
 			if(client.getSession().getUsername().equals(alt.getName()))
 			{
@@ -598,11 +595,11 @@ public final class AltManagerScreen extends Screen
 			
 			// name / email
 			context.drawText(tr, "Name: " + alt.getDisplayName(), x + 31, y + 3,
-				Colors.LIGHT_GRAY, false);
+				0xA0A0A0, false);
 			
 			// status
-			context.drawText(tr, getBottomText(), x + 31, y + 15,
-				Colors.LIGHT_GRAY, false);
+			context.drawText(tr, getBottomText(), x + 31, y + 15, 10526880,
+				false);
 		}
 		
 		private String getBottomText()

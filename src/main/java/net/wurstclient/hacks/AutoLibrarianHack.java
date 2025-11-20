@@ -24,6 +24,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.SelectMerchantTradeC2SPacket;
@@ -348,8 +349,7 @@ public final class AutoLibrarianHack extends Hack
 			hand, params.toHitResult());
 		
 		// swing hand
-		if(result instanceof ActionResult.Success success
-			&& success.swingSource() == ActionResult.SwingSource.CLIENT)
+		if(result.isAccepted() && result.shouldSwingHand())
 			swingHand.swing(hand);
 		
 		// reset sneak
@@ -391,8 +391,7 @@ public final class AutoLibrarianHack extends Hack
 			im.interactEntity(player, villager, hand);
 		
 		// swing hand
-		if(actionResult instanceof ActionResult.Success success
-			&& success.swingSource() == ActionResult.SwingSource.CLIENT)
+		if(actionResult.isAccepted() && actionResult.shouldSwingHand())
 			swingHand.swing(hand);
 		
 		// set cooldown
@@ -410,7 +409,7 @@ public final class AutoLibrarianHack extends Hack
 		for(TradeOffer tradeOffer : tradeOffers)
 		{
 			ItemStack stack = tradeOffer.getSellItem();
-			if(stack.getItem() != Items.ENCHANTED_BOOK)
+			if(!(stack.getItem() instanceof EnchantedBookItem))
 				continue;
 			
 			Set<Entry<RegistryEntry<Enchantment>>> enchantmentLevelMap =
@@ -451,9 +450,9 @@ public final class AutoLibrarianHack extends Hack
 				.filter(VillagerEntity.class::isInstance)
 				.map(e -> (VillagerEntity)e).filter(e -> e.getHealth() > 0)
 				.filter(e -> player.squaredDistanceTo(e) <= rangeSq)
-				.filter(e -> e.getVillagerData().profession().getKey()
-					.orElse(null) == VillagerProfession.LIBRARIAN)
-				.filter(e -> e.getVillagerData().level() == 1)
+				.filter(e -> e.getVillagerData()
+					.getProfession() == VillagerProfession.LIBRARIAN)
+				.filter(e -> e.getVillagerData().getLevel() == 1)
 				.filter(e -> !experiencedVillagers.contains(e));
 		
 		villager = stream

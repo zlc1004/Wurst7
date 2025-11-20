@@ -46,7 +46,7 @@ public final class FollowHack extends Hack
 	
 	private final SliderSetting distance =
 		new SliderSetting("Distance", "How closely to follow the target.", 1, 1,
-			12, 0.5, ValueDisplay.DECIMAL);
+			128, 0.01, ValueDisplay.DECIMAL);
 	
 	private final CheckboxSetting useAi =
 		new CheckboxSetting("Use AI (experimental)", false);
@@ -254,7 +254,7 @@ public final class FollowHack extends Hack
 	{
 		public EntityPathFinder()
 		{
-			super(BlockPos.ofFloored(entity.getEntityPos()));
+			super(BlockPos.ofFloored(entity.getPos()));
 			setThinkTime(1);
 		}
 		

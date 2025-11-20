@@ -15,7 +15,6 @@ import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
@@ -23,8 +22,6 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.input.AbstractInput;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
@@ -169,7 +166,7 @@ public class CleanUpScreen extends Screen
 	private boolean isSameProtocol(ServerInfo server)
 	{
 		return server.protocolVersion == SharedConstants.getGameVersion()
-			.protocolVersion();
+			.getProtocolVersion();
 	}
 	
 	private boolean isFailedPing(ServerInfo server)
@@ -192,30 +189,31 @@ public class CleanUpScreen extends Screen
 	}
 	
 	@Override
-	public boolean keyPressed(KeyInput context)
+	public boolean keyPressed(int keyCode, int scanCode, int int_3)
 	{
-		if(context.key() == GLFW.GLFW_KEY_ENTER)
-			cleanUpButton.onPress(context);
+		if(keyCode == GLFW.GLFW_KEY_ENTER)
+			cleanUpButton.onPress();
 		
-		return super.keyPressed(context);
+		return super.keyPressed(keyCode, scanCode, int_3);
 	}
 	
 	@Override
-	public boolean mouseClicked(Click context, boolean doubleClick)
+	public boolean mouseClicked(double mouseX, double mouseY, int button)
 	{
-		if(context.button() == GLFW.GLFW_MOUSE_BUTTON_4)
+		if(button == GLFW.GLFW_MOUSE_BUTTON_4)
 		{
 			close();
 			return true;
 		}
 		
-		return super.mouseClicked(context, doubleClick);
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 	
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY,
 		float partialTicks)
 	{
+		renderBackground(context, mouseX, mouseY, partialTicks);
 		context.drawCenteredTextWithShadow(textRenderer, "Clean Up", width / 2,
 			20, Colors.WHITE);
 		context.drawCenteredTextWithShadow(textRenderer,
@@ -279,9 +277,9 @@ public class CleanUpScreen extends Screen
 		}
 		
 		@Override
-		public void onPress(AbstractInput context)
+		public void onPress()
 		{
-			super.onPress(context);
+			super.onPress();
 			setMessage(Text.literal(messageSupplier.get()));
 		}
 	}

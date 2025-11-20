@@ -16,8 +16,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -70,9 +71,8 @@ public abstract class GameMenuScreenMixin extends Screen
 		int fh = 16;
 		float u = 0;
 		float v = 0;
-		context.state.goUpLayer();
-		context.drawTexture(RenderPipelines.GUI_TEXTURED, WURST_TEXTURE, x, y,
-			u, v, w, h, fw, fh);
+		RenderSystem.enableBlend();
+		// context.drawTexture(WURST_TEXTURE, x, y, u, v, w, h, fw, fh);
 	}
 	
 	@Unique
@@ -109,7 +109,7 @@ public abstract class GameMenuScreenMixin extends Screen
 		ensureSpaceAvailable(buttonX, buttonY, buttonWidth, buttonHeight);
 		
 		// Create Wurst Options button
-		MutableText buttonText = Text.literal("            Options");
+		MutableText buttonText = Text.literal("LHackOptions...");
 		wurstOptionsButton = ButtonWidget
 			.builder(buttonText, b -> openWurstOptions())
 			.dimensions(buttonX, buttonY, buttonWidth, buttonHeight).build();

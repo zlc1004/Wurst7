@@ -35,7 +35,7 @@ public final class RepairCmd extends Command
 		if(!player.getAbilities().creativeMode)
 			throw new CmdError("Creative mode only.");
 		
-		int slot = player.getInventory().getSelectedSlot();
+		int slot = player.getInventory().selectedSlot;
 		ItemStack stack = getHeldStack(player);
 		stack.setDamage(0);
 		InventoryUtils.setCreativeStack(slot, stack);
@@ -45,7 +45,7 @@ public final class RepairCmd extends Command
 	
 	private ItemStack getHeldStack(ClientPlayerEntity player) throws CmdError
 	{
-		ItemStack stack = player.getInventory().getSelectedStack();
+		ItemStack stack = player.getInventory().getMainHandStack();
 		
 		if(stack.isEmpty())
 			throw new CmdError("You need an item in your hand.");

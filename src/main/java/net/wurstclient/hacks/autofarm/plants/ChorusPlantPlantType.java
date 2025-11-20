@@ -57,14 +57,20 @@ public final class ChorusPlantPlantType extends AutoFarmPlantType
 	@Override
 	public boolean shouldHarvestByMining(BlockPos pos, BlockState state)
 	{
-		if(state.isOf(Blocks.CHORUS_FLOWER)
-			&& state.get(ChorusFlowerBlock.AGE, 0) == ChorusFlowerBlock.MAX_AGE)
-			return true;
+		if(state.isOf(Blocks.CHORUS_FLOWER))
+			return isFlowerFullyGrown(pos, state);
 		
-		if(!state.isOf(Blocks.CHORUS_PLANT))
-			return false;
+		if(state.isOf(Blocks.CHORUS_PLANT))
+			return !hasAttachedFlowers(pos, state, new HashSet<>());
 		
-		return !hasAttachedFlowers(pos, state, new HashSet<>());
+		return false;
+	}
+	
+	private boolean isFlowerFullyGrown(BlockPos pos, BlockState state)
+	{
+		return state.getOrEmpty(ChorusFlowerBlock.AGE)
+			.orElse(0) == ChorusFlowerBlock.MAX_AGE
+			|| !BlockUtils.getState(pos.up()).isAir();
 	}
 	
 	private boolean hasAttachedFlowers(BlockPos pos, BlockState state,
@@ -81,7 +87,7 @@ public final class ChorusPlantPlantType extends AutoFarmPlantType
 		for(Entry<Direction, BooleanProperty> entry : CHORUS_GROWING_DIRECTIONS
 			.entrySet())
 		{
-			if(!state.get(entry.getValue(), false))
+			if(!state.getOrEmpty(entry.getValue()).orElse(false))
 				continue;
 			
 			Direction direction = entry.getKey();
@@ -97,7 +103,7 @@ public final class ChorusPlantPlantType extends AutoFarmPlantType
 			// connected to the stem, so we can ignore any flowers that it
 			// supports.
 			if(direction.getAxis().isHorizontal()
-				&& neighborState.get(ConnectingBlock.DOWN, false))
+				&& neighborState.getOrEmpty(ConnectingBlock.DOWN).orElse(false))
 				continue;
 			
 			if(hasAttachedFlowers(neighborPos, neighborState, visited))

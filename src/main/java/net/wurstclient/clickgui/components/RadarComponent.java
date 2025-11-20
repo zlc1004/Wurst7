@@ -7,16 +7,16 @@
  */
 package net.wurstclient.clickgui.components;
 
-import org.joml.Matrix3x2fStack;
+import org.joml.Quaternionf;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.AmbientEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.WaterAnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -61,19 +61,19 @@ public final class RadarComponent extends Component
 		context.fill(x1, y1, x2, y2,
 			RenderUtils.toIntColor(gui.getBgColor(), gui.getOpacity()));
 		
-		Matrix3x2fStack matrixStack = context.getMatrices();
-		matrixStack.pushMatrix();
-		matrixStack.translate(middleX, middleY);
+		MatrixStack matrixStack = context.getMatrices();
+		matrixStack.push();
+		matrixStack.translate(middleX, middleY, 0);
 		
 		ClientPlayerEntity player = MC.player;
 		if(!hack.isRotateEnabled())
-			matrixStack.rotate(
-				(180 + player.getYaw()) * MathHelper.RADIANS_PER_DEGREE);
+			matrixStack.multiply(new Quaternionf().rotationZ(
+				(180 + player.getYaw()) * MathHelper.RADIANS_PER_DEGREE));
 		
 		// arrow
 		ClickGuiIcons.drawRadarArrow(context, -2, -2, 2, 2);
 		
-		matrixStack.popMatrix();
+		matrixStack.pop();
 		Vec3d lerpedPlayerPos = EntityUtils.getLerpedPos(player, partialTicks);
 		
 		// points
@@ -114,8 +114,7 @@ public final class RadarComponent extends Component
 		if(e instanceof Monster)
 			return 0xFFFF8000;
 		if(e instanceof AnimalEntity || e instanceof AmbientEntity
-			|| e instanceof WaterCreatureEntity
-			|| e instanceof WaterAnimalEntity)
+			|| e instanceof WaterCreatureEntity)
 			return 0xFF00FF00;
 		return 0xFF808080;
 	}

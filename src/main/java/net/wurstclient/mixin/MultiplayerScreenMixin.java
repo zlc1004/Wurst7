@@ -13,16 +13,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.llamalad7.mixinextras.sugar.Local;
-
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.DirectionalLayoutWidget;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
 import net.wurstclient.WurstClient;
 import net.wurstclient.serverfinder.CleanUpScreen;
+import net.wurstclient.serverfinder.FindPlayersScreen;
+import net.wurstclient.serverfinder.GetPlayersScreen;
 import net.wurstclient.serverfinder.ServerFinderScreen;
 import net.wurstclient.util.LastServerRememberer;
 
@@ -36,53 +35,44 @@ public class MultiplayerScreenMixin extends Screen
 		super(title);
 	}
 	
-	@Inject(at = @At("HEAD"), method = "init()V")
-	private void beforeVanillaButtons(CallbackInfo ci)
+	@Inject(at = @At("TAIL"), method = "init()V")
+	private void onInit(CallbackInfo ci)
 	{
 		if(!WurstClient.INSTANCE.isEnabled())
 			return;
 		
-		MultiplayerScreen mpScreen = (MultiplayerScreen)(Object)this;
-		
-		// Add Last Server button early for better tab navigation
-		lastServerButton = ButtonWidget
-			.builder(Text.of("Last Server"),
-				b -> LastServerRememberer.joinLastServer(mpScreen))
-			.width(100).build();
-		addDrawableChild(lastServerButton);
-	}
-	
-	@Inject(at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/client/gui/screen/multiplayer/MultiplayerScreen;refreshWidgetPositions()V",
-		ordinal = 0), method = "init()V")
-	private void afterVanillaButtons(CallbackInfo ci,
-		@Local(ordinal = 1) DirectionalLayoutWidget footerTopRow,
-		@Local(ordinal = 2) DirectionalLayoutWidget footerBottomRow)
-	{
-		if(!WurstClient.INSTANCE.isEnabled())
-			return;
-		
-		MultiplayerScreen mpScreen = (MultiplayerScreen)(Object)this;
-		
-		ButtonWidget serverFinderButton = ButtonWidget
-			.builder(Text.of("Server Finder"),
-				b -> client.setScreen(new ServerFinderScreen(mpScreen)))
-			.width(100).build();
-		addDrawableChild(serverFinderButton);
-		footerTopRow.add(serverFinderButton);
-		
-		ButtonWidget cleanUpButton = ButtonWidget
-			.builder(Text.of("Clean Up"),
-				b -> client.setScreen(new CleanUpScreen(mpScreen)))
-			.width(100).build();
-		addDrawableChild(cleanUpButton);
-		footerBottomRow.add(cleanUpButton);
-	}
-	
-	@Inject(at = @At("TAIL"), method = "refreshWidgetPositions()V")
-	private void onRefreshWidgetPositions(CallbackInfo ci)
-	{
+		lastServerButton = addDrawableChild(ButtonWidget
+			.builder(Text.literal("Last Server"),
+				b -> LastServerRememberer
+					.joinLastServer((MultiplayerScreen)(Object)this))
+			.dimensions(width / 2 - 154, 10, 100, 20).build());
 		updateLastServerButton();
+		
+		addDrawableChild(ButtonWidget
+			.builder(Text.literal("Find Players"),
+				b -> client.setScreen(
+					new FindPlayersScreen((MultiplayerScreen)(Object)this)))
+			.dimensions(width / 2 + 48, height - 54, 100, 20).build());
+		
+		addDrawableChild(
+			ButtonWidget
+				.builder(Text.literal("ServerSeeker"),
+					b -> client.setScreen(new ServerFinderScreen(
+						(MultiplayerScreen)(Object)this)))
+				.dimensions(width / 2 + 154 + 4, height - 54, 100, 20).build());
+		
+		addDrawableChild(ButtonWidget
+			.builder(Text.literal("Get Players"),
+				b -> client.setScreen(
+					new GetPlayersScreen((MultiplayerScreen)(Object)this,
+						java.util.Collections.emptyList())))
+			.dimensions(width / 2 + 48, height - 30, 100, 20).build());
+		
+		addDrawableChild(ButtonWidget
+			.builder(Text.literal("Clean Up"),
+				b -> client.setScreen(
+					new CleanUpScreen((MultiplayerScreen)(Object)this)))
+			.dimensions(width / 2 + 154 + 4, height - 30, 100, 20).build());
 	}
 	
 	@Inject(at = @At("HEAD"),
@@ -100,7 +90,5 @@ public class MultiplayerScreenMixin extends Screen
 			return;
 		
 		lastServerButton.active = LastServerRememberer.getLastServer() != null;
-		lastServerButton.setX(width / 2 - 154);
-		lastServerButton.setY(6);
 	}
 }

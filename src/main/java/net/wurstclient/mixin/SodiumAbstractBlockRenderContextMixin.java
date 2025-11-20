@@ -23,8 +23,8 @@ import net.wurstclient.events.ShouldDrawSideListener.ShouldDrawSideEvent;
 
 /**
  * Last updated for <a href=
- * "https://github.com/CaffeineMC/sodium/tree/02253db283e4679228ba5fbc30cfc851d17123c8">Sodium
- * 0.6.13+mc1.21.6</a>
+ * "https://github.com/CaffeineMC/sodium/tree/320aad8b70bf22254452872c7e9443c8b55efbc5">Sodium
+ * 0.6.13+mc1.21.4</a>
  */
 @Pseudo
 @Mixin(targets = {
@@ -41,8 +41,9 @@ public class SodiumAbstractBlockRenderContextMixin
 	 * Hides and shows blocks when using X-Ray with Sodium installed.
 	 */
 	@Inject(at = @At("HEAD"),
-		method = "isFaceCulled(Lnet/minecraft/util/math/Direction;)Z",
+		method = "isFaceCulled(Lnet/minecraft/class_2350;)Z",
 		cancellable = true,
+		remap = false,
 		require = 0)
 	private void onIsFaceCulled(@Nullable Direction face,
 		CallbackInfoReturnable<Boolean> cir)

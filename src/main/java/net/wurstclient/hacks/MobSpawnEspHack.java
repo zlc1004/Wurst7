@@ -10,11 +10,12 @@ package net.wurstclient.hacks;
 import java.awt.Color;
 import java.util.Map.Entry;
 
-import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.EntityType;
@@ -67,8 +68,7 @@ public final class MobSpawnEspHack extends Hack
 	
 	private final ChunkVertexBufferCoordinator coordinator =
 		new ChunkVertexBufferCoordinator(this::isSpawnable, DrawMode.LINES,
-			VertexFormats.POSITION_COLOR_NORMAL, this::buildBuffer,
-			drawDistance);
+			VertexFormats.LINES, this::buildBuffer, drawDistance);
 	
 	private int cachedDayColor;
 	private int cachedNightColor;
@@ -123,8 +123,8 @@ public final class MobSpawnEspHack extends Hack
 	@Override
 	public void onRender(MatrixStack matrixStack, float partialTicks)
 	{
-		RenderLayer.MultiPhase layer =
-			WurstRenderLayers.getLines(depthTest.isChecked());
+		RenderSystem.setShaderColor(1, 1, 1, opacity.getValueF());
+		RenderLayer layer = WurstRenderLayers.getLines(depthTest.isChecked());
 		
 		for(Entry<ChunkPos, EasyVertexBuffer> entry : coordinator.getBuffers())
 		{
@@ -133,11 +133,12 @@ public final class MobSpawnEspHack extends Hack
 			matrixStack.push();
 			RenderUtils.applyRegionalRenderOffset(matrixStack, region);
 			
-			entry.getValue().draw(matrixStack, layer, 1, 1, 1,
-				opacity.getValueF());
+			entry.getValue().draw(matrixStack, layer);
 			
 			matrixStack.pop();
 		}
+		
+		RenderSystem.setShaderColor(1, 1, 1, 1);
 	}
 	
 	private boolean isSpawnable(BlockPos pos, BlockState state)

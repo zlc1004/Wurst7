@@ -54,6 +54,7 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayerEntity
 	protected MinecraftClient client;
 	
 	private Screen tempCurrentScreen;
+	private boolean hideNextItemUse;
 	
 	public ClientPlayerEntityMixin(WurstClient wurst, ClientWorld world,
 		GameProfile profile)
@@ -87,19 +88,45 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayerEntity
 	}
 	
 	/**
-	 * Allows NoSlowdown to intercept the isUsingItem() call in
-	 * tickMovement().
+	 * This mixin runs just before the tickMovement() method calls
+	 * isUsingItem(), so that the onIsUsingItem() mixin knows which
+	 * call to intercept.
 	 */
-	@WrapOperation(at = @At(value = "INVOKE",
+	@Inject(at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z",
 		ordinal = 0), method = "tickMovement()V")
-	private boolean wrapTickMovementItemUse(ClientPlayerEntity instance,
-		Operation<Boolean> original)
+	private void onTickMovementItemUse(CallbackInfo ci)
 	{
 		if(WurstClient.INSTANCE.getHax().noSlowdownHack.isEnabled())
-			return false;
+			hideNextItemUse = true;
+	}
+	
+	/**
+	 * Pretends that the player is not using an item when instructed to do so by
+	 * the onTickMovement() mixin.
+	 */
+	@Inject(at = @At("HEAD"), method = "isUsingItem()Z", cancellable = true)
+	private void onIsUsingItem(CallbackInfoReturnable<Boolean> cir)
+	{
+		if(!hideNextItemUse)
+			return;
 		
-		return original.call(instance);
+		cir.setReturnValue(false);
+		hideNextItemUse = false;
+	}
+	
+	/**
+	 * This mixin is injected into a random field access later in the
+	 * tickMovement() method to ensure that hideNextItemUse is always reset
+	 * after the item use slowdown calculation.
+	 */
+	@Inject(at = @At(value = "FIELD",
+		target = "Lnet/minecraft/client/network/ClientPlayerEntity;ticksToNextAutojump:I",
+		opcode = Opcodes.GETFIELD,
+		ordinal = 0), method = "tickMovement()V")
+	private void afterIsUsingItem(CallbackInfo ci)
+	{
+		hideNextItemUse = false;
 	}
 	
 	@Inject(at = @At("HEAD"), method = "sendMovementPackets()V")
@@ -189,12 +216,11 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayerEntity
 	}
 	
 	@Override
-	public void setVelocityClient(Vec3d vec)
+	public void setVelocityClient(double x, double y, double z)
 	{
-		KnockbackEvent event = new KnockbackEvent(vec.x, vec.y, vec.z);
+		KnockbackEvent event = new KnockbackEvent(x, y, z);
 		EventManager.fire(event);
-		super.setVelocityClient(
-			new Vec3d(event.getX(), event.getY(), event.getZ()));
+		super.setVelocityClient(event.getX(), event.getY(), event.getZ());
 	}
 	
 	@Override
@@ -275,9 +301,6 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayerEntity
 		
 		if(effect == StatusEffects.LEVITATION
 			&& hax.noLevitationHack.isEnabled())
-			return false;
-		
-		if(effect == StatusEffects.BLINDNESS && hax.antiBlindHack.isEnabled())
 			return false;
 		
 		if(effect == StatusEffects.DARKNESS && hax.antiBlindHack.isEnabled())

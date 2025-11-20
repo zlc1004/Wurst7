@@ -40,7 +40,7 @@ public final class ViewCompCmd extends Command
 	public void call(String[] args) throws CmdException
 	{
 		ClientPlayerEntity player = MC.player;
-		ItemStack stack = player.getInventory().getSelectedStack();
+		ItemStack stack = player.getInventory().getMainHandStack();
 		if(stack.isEmpty())
 			throw new CmdError("You must hold an item in your main hand.");
 		

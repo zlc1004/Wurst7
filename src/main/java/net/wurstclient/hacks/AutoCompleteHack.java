@@ -24,7 +24,9 @@ import net.wurstclient.hacks.autocomplete.SuggestionHandler;
 import net.wurstclient.util.ChatUtils;
 
 @SearchTags({"auto complete", "Copilot", "ChatGPT", "chat GPT", "GPT-3", "GPT3",
-	"GPT 3", "OpenAI", "open ai", "ChatAI", "chat AI", "ChatBot", "chat bot"})
+	"GPT 3", "GPT-4", "GPT4", "GPT 4", "Claude", "Llama", "Phi", "Gemma",
+	"OpenAI", "open ai", "LocalAI", "local ai", "Ollama", "ChatAI", "chat AI",
+	"ChatBot", "chat bot", "AI assistant"})
 public final class AutoCompleteHack extends Hack
 	implements ChatOutputListener, UpdateListener
 {
@@ -54,10 +56,11 @@ public final class AutoCompleteHack extends Hack
 		completer = new OpenAiMessageCompleter(modelSettings);
 		
 		if(completer instanceof OpenAiMessageCompleter
-			&& System.getenv("WURST_OPENAI_KEY") == null)
+			&& System.getenv("WURST_OPENAI_KEY") == null
+			&& modelSettings.customAuthToken.getValue().trim().isBlank())
 		{
 			ChatUtils.error("API key not found. Please set the"
-				+ " WURST_OPENAI_KEY environment variable and reboot.");
+				+ " WURST_OPENAI_KEY environment variable or configure a custom auth token.");
 			setEnabled(false);
 			return;
 		}
